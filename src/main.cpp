@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <utils/file.hpp>
 #include <lexer/lexer.hpp>
+#include "parser/parser.hpp"
 
 int main(const int argc, char** argv) {
     if (argc == 1) {
@@ -12,9 +13,8 @@ int main(const int argc, char** argv) {
     const auto tokens = lexer(source_code).tokenize();
 
     std::println("found {} tokens", tokens.size());
+    for (const auto& token : tokens) std::println("{}", token);
 
-    for (const auto& token : tokens) {
-        std::print("{} ", token);
-    }
+    const auto parser = ::parser(tokens).parse();
     return 0;
 }
