@@ -1,4 +1,3 @@
-add_subdirectory(utils)
+file(GLOB ALL_SOURCES "*.cpp")
 
-add_executable(c_compiler main.cpp)
-target_link_libraries(c_compiler PRIVATE utils_lib)
+add_library(lexer_lib ${ALL_SOURCES})
