@@ -15,11 +15,11 @@ class lexer {
 public:
   explicit lexer(const std::string &source) : m_source(source), m_index(0) {
     const std::vector<std::pair<token::token_kind, std::string>> rules = {
-      {token::token_kind::identifier,  "[a-zA-Z_]\\w*\b"},
-      {token::token_kind::number,      "[0-9]\b"},
       {token::token_kind::int_kw,      "int\\b"},
       {token::token_kind::void_kw,     "void\\b"},
       {token::token_kind::return_kw,   "return\\b"},
+      {token::token_kind::identifier,  "[a-zA-Z_][a-zA-Z0-9_]*"},
+      {token::token_kind::number,      "[0-9]+"},
       {token::token_kind::paren_open,  "\\("},
       {token::token_kind::paren_close, "\\)"},
       {token::token_kind::brace_open,  "\\{"},

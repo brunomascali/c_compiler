@@ -14,7 +14,7 @@ int main(const int argc, char** argv) {
     std::println("found {} tokens", tokens.size());
 
     for (const auto& token : tokens) {
-        std::print("'{}' ", token.lexeme());
+        std::print("{} ", token);
     }
     return 0;
 }

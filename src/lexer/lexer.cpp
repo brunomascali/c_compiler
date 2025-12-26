@@ -21,5 +21,5 @@ std::vector<token> lexer::tokenize() {
   }
 
 void lexer::skip_whitespace() {
-  while (::isspace(m_index)) m_index = m_index + 1;
+  while (isspace(m_index)) m_index = m_index + 1;
 }
