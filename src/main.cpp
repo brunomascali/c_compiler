@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <utils/file.hpp>
 #include <lexer/lexer.hpp>
-#include "parser/parser.hpp"
+#include <parser/parser.hpp>
 
 int main(const int argc, char** argv) {
     if (argc == 1) {
@@ -15,6 +15,8 @@ int main(const int argc, char** argv) {
     std::println("found {} tokens", tokens.size());
     for (const auto& token : tokens) std::println("{}", token);
 
-    const auto parser = ::parser(tokens).parse();
+    const auto ast = parser(tokens).parse();
+
+
     return 0;
 }

@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 struct ast_node {
   virtual ~ast_node() = default;
@@ -11,7 +12,7 @@ struct ast_node {
 // <exp> ::= <int>
 struct expr_node : ast_node {
   std::string value;
-  explicit expr_node(const std::string &val) : value(val) {}
+  explicit expr_node(std::string val) : value(std::move(val)) {}
 };
 
 // <statement> ::= "return" <exp> ";"

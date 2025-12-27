@@ -3,6 +3,7 @@
 
 #include <regex>
 #include <string>
+#include <utility>
 #include <vector>
 #include "token.hpp"
 
@@ -13,7 +14,7 @@ struct token_rule {
 
 class lexer {
 public:
-  explicit lexer(const std::string &source) : m_source(source), m_index(0) {
+  explicit lexer(std::string source) : m_source(std::move(source)), m_index(0) {
     const std::vector<std::pair<token::token_kind, std::string>> rules = {
       {token::token_kind::int_kw,      "int\\b"},
       {token::token_kind::void_kw,     "void\\b"},
