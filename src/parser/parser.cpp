@@ -1,14 +1,14 @@
 #include "parser.hpp"
 
-std::unique_ptr<ast_node> parser::parse() {
+ast::program parser::parse() {
   return parse_program();
 }
 
-std::unique_ptr<program_node> parser::parse_program() {
-  return std::make_unique<program_node>(parse_function());
+ast::program parser::parse_program() {
+  return ast::program({parse_function()});
 }
 
-std::unique_ptr<function_node> parser::parse_function() {
+ast::function parser::parse_function() {
   expect_or_fail(token::token_kind::int_kw);
   advance();
 
@@ -25,28 +25,28 @@ std::unique_ptr<function_node> parser::parse_function() {
 
   expect_or_fail(token::token_kind::brace_open);
   advance();
-  std::unique_ptr<statement_node> body = parse_statement();
+  ast::statement body = parse_statement();
   expect_or_fail(token::token_kind::brace_close);
   advance();
 
-  return std::make_unique<function_node>(identifier, std::move(body));
+  return ast::function(identifier, {body});
 }
 
-std::unique_ptr<statement_node> parser::parse_statement() {
+ast::statement parser::parse_statement() {
   expect_or_fail(token::token_kind::return_kw);
   advance();
-  auto expr = parse_number();
+  const auto expr = parse_number();
   advance();
 
-  return std::make_unique<statement_node>(std::move(expr));
+  return ast::return_stmt(expr);
 }
 
-std::unique_ptr<expr_node> parser::parse_number() {
+ast::expr parser::parse_number() {
   expect_or_fail(token::token_kind::number);
-  std::string number = current_token().lexeme();
+  const std::string number = current_token().lexeme();
   advance();
 
-  return std::make_unique<expr_node>(number);
+  return std::stoi(number);
 }
 
 void parser::expect_or_fail(const token::token_kind kind) const {

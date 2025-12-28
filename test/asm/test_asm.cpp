@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "asm/function.hpp"
+#include "asm/start_function.hpp"
 #include "asm/ret.hpp"
 #include "gtest/gtest.h"
 

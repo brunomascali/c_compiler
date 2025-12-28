@@ -1,39 +1,50 @@
 #ifndef C_COMPILER_AST_HPP
 #define C_COMPILER_AST_HPP
 
-#include <memory>
 #include <string>
-#include <utility>
+#include <variant>
 
-struct ast_node {
-  virtual ~ast_node() = default;
-};
+namespace x86 {
+  struct instruction;
+}
 
-// <exp> ::= <int>
-struct expr_node : ast_node {
-  std::string value;
-  explicit expr_node(std::string val) : value(std::move(val)) {}
-};
+namespace ast {
+  struct unary;
+  struct binary;
 
-// <statement> ::= "return" <exp> ";"
-struct statement_node : ast_node {
-  std::unique_ptr<expr_node> exp;
-  explicit statement_node(std::unique_ptr<expr_node> e) : exp(std::move(e)) {}
-};
+  using expr = std::variant<
+    int>;
 
-// <function> ::= "int" <identifier> "(" "void" ")" "{" <statement> "}"
-struct function_node : ast_node {
-  std::string name;
-  std::unique_ptr<statement_node> body;
+  struct unary {
+    std::string op;
+    expr target;
+  };
 
-  function_node(std::string n, std::unique_ptr<statement_node> b)
-      : name(std::move(n)), body(std::move(b)) {}
-};
+  struct binary {
+    expr left;
+    std::string op;
+    expr right;
+  };
 
-// <program> ::= <function>
-struct program_node : ast_node {
-  std::unique_ptr<function_node> function;
-  explicit program_node(std::unique_ptr<function_node> f) : function(std::move(f)) {}
+  struct return_stmt {
+    expr expression;
+  };
+
+  using statement = std::variant<return_stmt>;
+
+  struct function {
+    std::string name;
+    std::vector<statement> body;
+  };
+
+  struct program {
+    std::vector<function> statements;
+  };
+}
+
+template<class... T>
+struct overloaded : T... {
+  using T::operator()...;
 };
 
 #endif //C_COMPILER_AST_HPP

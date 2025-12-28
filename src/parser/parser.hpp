@@ -13,27 +13,27 @@ public:
   explicit parser(std::vector<token> tokens) : m_tokens(std::move(tokens)), m_idx(0) {
   }
 
-  std::unique_ptr<ast_node> parse();
+  ast::program parse();
 
 private:
   std::vector<token> m_tokens;
   std::size_t m_idx;
 
-  std::unique_ptr<program_node> parse_program();
+  ast::program parse_program();
 
-  std::unique_ptr<function_node> parse_function();
+  ast::function parse_function();
 
-  std::unique_ptr<statement_node> parse_statement();
+  ast::statement parse_statement();
 
-  std::unique_ptr<expr_node> parse_number();
+  ast::expr parse_number();
 
-  std::vector<token> tokens() const { return m_tokens; }
+  [[nodiscard]] std::vector<token> tokens() const { return m_tokens; }
 
-  std::size_t index() const { return m_idx; }
+  [[nodiscard]] std::size_t index() const { return m_idx; }
 
   void advance() { m_idx++; }
 
-  token current_token() const { return m_tokens.at(m_idx); }
+  [[nodiscard]] token current_token() const { return m_tokens.at(m_idx); }
 
   void expect_or_fail(token::token_kind kind) const;
 };
