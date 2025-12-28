@@ -1,6 +1,8 @@
 #ifndef C_COMPILER_INSTRUCTION_HPP
 #define C_COMPILER_INSTRUCTION_HPP
 
+#include <ast/ast.hpp>
+
 namespace x86 {
   struct instruction {
     virtual ~instruction() = default;

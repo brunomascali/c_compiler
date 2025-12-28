@@ -4,10 +4,10 @@ add_subdirectory(parser)
 add_subdirectory(ast)
 add_subdirectory(asm)
 
-set(ALL_LIBS lexer_lib parser_lib ast_lib utils_lib)
+set(ALL_LIBS lexer_lib parser_lib ast_lib utils_lib asm_lib)
 
 foreach(lib ${ALL_LIBS})
-    target_include_directories(${lib} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    target_include_directories(${lib} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 endforeach()
 
 add_executable(c_compiler main.cpp)

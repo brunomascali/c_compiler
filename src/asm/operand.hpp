@@ -1,11 +1,14 @@
 #ifndef C_COMPILER_OPERAND_HPP
 #define C_COMPILER_OPERAND_HPP
 #include <format>
+#include <memory>
 #include <string>
 #include <variant>
 
+#include <ast/ast.hpp>
+
 namespace x86 {
-  enum class reg { a, b };
+  enum class reg { eax };
 
   // operand ::= imm(int) | register
   struct operand {
@@ -18,6 +21,10 @@ namespace x86 {
   };
 }
 
+inline x86::operand ast_to_operand(const std::unique_ptr<expr_node>& inst) {
+  return {x86::operand(inst->value)};
+}
+
 template<>
 struct std::formatter<x86::operand> {
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
@@ -28,8 +35,7 @@ struct std::formatter<x86::operand> {
         if constexpr (std::is_same_v<T, std::string>) {
             return std::format_to(ctx.out(), "{}", arg);
         } else if constexpr (std::is_same_v<T, x86::reg>) {
-            std::string_view r = (arg == x86::reg::a) ? "a" : "b";
-            return std::format_to(ctx.out(), "{}", r);
+            return std::format_to(ctx.out(), "eax");
         }
     }, op.value);
   }
