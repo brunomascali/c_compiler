@@ -17,13 +17,14 @@ public:
 private:
   std::vector<instruction> m_instructions;
 
-
   void visit_statement(const ast::statement &statement);
 
   void asm_from_return_ast_node(const ast::return_stmt &statement);
 
   void gen_from_function_ast_node(const ast::function &function);
 };
+
+std::string instructions_visitor(asm_emitter::instruction instruction);
 
 
 #endif //C_COMPILER_ASMEMITTER_HPP

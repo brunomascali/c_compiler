@@ -19,7 +19,11 @@ int main(const int argc, char** argv) {
 
     const auto ast = parser(tokens).parse();
 
-    auto asm_ = asm_emitter().emit(ast);
+    const auto asm_instructions = asm_emitter().emit(ast);
+
+    for (const auto& instruction : asm_instructions) {
+        std::println("{}", instructions_visitor(instruction));
+    }
 
     return 0;
 }
