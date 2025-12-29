@@ -2,9 +2,7 @@
 #define C_COMPILER_PARSER_HPP
 
 #include <vector>
-#include <format>
 #include <memory>
-
 #include "../lexer/token.hpp"
 #include "../ast/ast.hpp"
 
@@ -25,7 +23,7 @@ private:
 
   ast::statement parse_statement();
 
-  ast::expr parse_number();
+  ast::expr parse_expr();
 
   [[nodiscard]] std::vector<token> tokens() const { return m_tokens; }
 
@@ -34,6 +32,8 @@ private:
   void advance() { m_idx++; }
 
   [[nodiscard]] token current_token() const { return m_tokens.at(m_idx); }
+
+  [[nodiscard]] token::token_kind current_token_kind() const { return m_tokens.at(m_idx).kind(); }
 
   void expect_or_fail(token::token_kind kind) const;
 };

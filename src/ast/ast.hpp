@@ -3,6 +3,7 @@
 
 #include <string>
 #include <variant>
+#include <memory>
 
 namespace x86 {
   struct instruction;
@@ -12,12 +13,16 @@ namespace ast {
   struct unary;
   struct binary;
 
-  using expr = std::variant<
-    int>;
+  using expr = std::variant<int, std::unique_ptr<unary> >;
 
   struct unary {
-    std::string op;
-    expr target;
+    enum class op { complement, negate };
+
+    op operation;
+    expr exp;
+
+    unary(const op operation, expr e) : operation(operation), exp(std::move(e)) {
+    }
   };
 
   struct binary {
@@ -35,10 +40,15 @@ namespace ast {
   struct function {
     std::string name;
     std::vector<statement> body;
+
+    function(std::string n, std::vector<statement> b)
+      : name(std::move(n)), body(std::move(b)) {}
   };
 
   struct program {
     std::vector<function> statements;
+
+    explicit program(std::vector<function> f) : statements(std::move(f)) {}
   };
 }
 

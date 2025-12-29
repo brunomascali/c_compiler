@@ -21,7 +21,7 @@ int main(const int argc, char** argv) {
 
     const auto asm_instructions = asm_emitter().emit(ast);
 
-    for (const auto& instruction : asm_instructions) {
+    for (const auto& instruction : asm_emitter().emit(ast)) {
         std::println("{}", instructions_visitor(instruction));
     }
 

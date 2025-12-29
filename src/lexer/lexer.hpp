@@ -25,7 +25,9 @@ public:
       {token::token_kind::paren_close, "\\)"},
       {token::token_kind::brace_open,  "\\{"},
       {token::token_kind::brace_close, "\\}"},
-      {token::token_kind::semicolon,   ";"}
+      {token::token_kind::semicolon,   ";"},
+      {token::token_kind::hyphen,   "-"},
+      {token::token_kind::tilde,   "~"}
     };
     std::string combined_pattern;
     for (const auto&[kind, pattern] : rules) {
@@ -44,8 +46,6 @@ private:
   std::regex m_regex;
   std::vector<token::token_kind> m_kinds;
   std::size_t m_index;
-
-  void skip_whitespace();
 };
 
 #endif //C_COMPILER_LEXER_HPP

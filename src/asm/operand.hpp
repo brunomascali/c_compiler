@@ -42,6 +42,8 @@ namespace x86 {
 
     [[nodiscard]] std::string to_string() const;
   };
+
+  constexpr auto EAX = sized_register{reg::rax, bit_width::DWORD};
 }
 
 inline x86::operand ast_to_operand(const ast::expr &expr) {
@@ -50,8 +52,12 @@ inline x86::operand ast_to_operand(const ast::expr &expr) {
 
     if constexpr (std::is_same_v<T, int>) {
       return x86::operand(expr);
-    } else
-      static_assert(false, "non-exhaustive visitor!");
+    }
+    if constexpr (std::is_same_v<T, std::unique_ptr<ast::unary>>) {
+      return x86::operand(12);
+    }
+    // static_assert(false, "non-exhaustive visitor!");
+    return x86::operand(x86::EAX);
   }, expr);
 }
 
@@ -133,10 +139,6 @@ struct std::formatter<x86::operand> {
 
 inline std::string x86::operand::to_string() const {
   return std::format("{}", *this);
-}
-
-namespace x86 {
-  constexpr auto EAX = sized_register{reg::rax, bit_width::DWORD};
 }
 
 #endif //C_COMPILER_OPERAND_HPP

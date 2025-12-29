@@ -1,8 +1,12 @@
 #ifndef C_COMPILER_TOKEN_HPP
 #define C_COMPILER_TOKEN_HPP
 
+#include <vector>
+#include <tuple>
 #include <format>
 #include <string>
+
+#include "ast/ast.hpp"
 
 class token
 {
@@ -16,6 +20,7 @@ public:
     paren_open, paren_close,
     brace_open, brace_close,
     semicolon,
+    hyphen, tilde,
   };
 
   explicit token(const token_kind k, std::string lexeme = "") : m_kind(k), m_lexeme(std::move(lexeme)) {}
@@ -52,10 +57,27 @@ struct std::formatter<token::token_kind> {
       case token::token_kind::brace_open:  name = "{"; break;
       case token::token_kind::brace_close: name = "}"; break;
       case token::token_kind::semicolon:   name = ";"; break;
+      case token::token_kind::hyphen:      name = "-"; break;
+      case token::token_kind::tilde:      name = "~"; break;
     }
     return std::format_to(ctx.out(), "{}", name);
   }
 };
+
+constexpr std::optional<ast::unary::op> try_unop_from_token_kind(const token::token_kind k) {
+  using tk = token::token_kind;
+  using unop = ast::unary::op;
+  static std::vector<std::tuple<tk, unop>> unary_operators = {
+    {tk::tilde, unop::negate},
+    {tk::hyphen, unop::complement}
+  };
+
+  for (const auto &[token_kind, unary_operator] : unary_operators) {
+    if (token_kind == k) return unary_operator;
+  }
+
+  return std::nullopt;
+}
 
 template <>
 struct std::formatter<token> {

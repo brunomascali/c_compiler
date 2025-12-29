@@ -5,15 +5,18 @@ ast::program parser::parse() {
 }
 
 ast::program parser::parse_program() {
-  return ast::program({parse_function()});
+  std::vector<ast::function> functions;
+  functions.emplace_back(parse_function());
+  return ast::program(std::move(functions));
 }
 
 ast::function parser::parse_function() {
+  std::vector<ast::statement> statements;
   expect_or_fail(token::token_kind::int_kw);
   advance();
 
   expect_or_fail(token::token_kind::identifier);
-  auto identifier = current_token().lexeme();
+  const auto identifier = current_token().lexeme();
   advance();
 
   expect_or_fail(token::token_kind::paren_open);
@@ -25,28 +28,46 @@ ast::function parser::parse_function() {
 
   expect_or_fail(token::token_kind::brace_open);
   advance();
-  ast::statement body = parse_statement();
+  statements.emplace_back(parse_statement());
   expect_or_fail(token::token_kind::brace_close);
   advance();
 
-  return ast::function(identifier, {body});
+  return ast::function{ identifier, std::move(statements) };
 }
 
 ast::statement parser::parse_statement() {
-  expect_or_fail(token::token_kind::return_kw);
+  using tk = token::token_kind;
+  expect_or_fail(tk::return_kw);
   advance();
-  const auto expr = parse_number();
+  auto expr = parse_expr();
+  expect_or_fail(tk::semicolon);
   advance();
 
-  return ast::return_stmt(expr);
+  return ast::return_stmt(std::move(expr));
 }
 
-ast::expr parser::parse_number() {
-  expect_or_fail(token::token_kind::number);
-  const std::string number = current_token().lexeme();
-  advance();
+ast::expr parser::parse_expr() {
+  using tk = token::token_kind;
+  if (current_token_kind() == tk::number) {
+    const std::string number = current_token().lexeme();
+    advance();
+    return std::stoi(number);
+  }
+  if (current_token_kind() == tk::paren_open) {
+    advance();
+    auto expr = parse_expr();
+    expect_or_fail(tk::paren_close);
+    advance();
+    return expr;
+  }
+  if (const auto opt = try_unop_from_token_kind(current_token_kind()); opt.has_value()) {
+    const auto unary_operator = opt.value();
+    advance();
+    auto operand = parse_expr();
+    return std::make_unique<ast::unary>(unary_operator, std::move(operand));
+  }
 
-  return std::stoi(number);
+  throw std::runtime_error(std::format("malformed expression: found {}", current_token().lexeme()));
 }
 
 void parser::expect_or_fail(const token::token_kind kind) const {
