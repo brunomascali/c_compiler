@@ -19,8 +19,7 @@ int main(const int argc, char** argv) {
 
     const auto ast = parser(tokens).parse();
 
-    asm_emitter emitter;
-    emitter.emit(ast);
+    auto asm_ = asm_emitter().emit(ast);
 
     return 0;
 }

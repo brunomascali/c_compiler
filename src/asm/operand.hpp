@@ -5,7 +5,7 @@
 #include <string>
 #include <variant>
 
-#include "ast.hpp"
+#include "ast/ast.hpp"
 
 namespace x86 {
   enum class reg { eax };
