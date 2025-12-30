@@ -2,11 +2,8 @@
 #define C_COMPILER_TOKEN_HPP
 
 #include <vector>
-#include <tuple>
 #include <format>
 #include <string>
-
-#include "ast/ast.hpp"
 
 class token
 {
@@ -63,21 +60,6 @@ struct std::formatter<token::token_kind> {
     return std::format_to(ctx.out(), "{}", name);
   }
 };
-
-constexpr std::optional<ast::unary::op> try_unop_from_token_kind(const token::token_kind k) {
-  using tk = token::token_kind;
-  using unop = ast::unary::op;
-  static std::vector<std::tuple<tk, unop>> unary_operators = {
-    {tk::tilde, unop::negate},
-    {tk::hyphen, unop::complement}
-  };
-
-  for (const auto &[token_kind, unary_operator] : unary_operators) {
-    if (token_kind == k) return unary_operator;
-  }
-
-  return std::nullopt;
-}
 
 template <>
 struct std::formatter<token> {

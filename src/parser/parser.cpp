@@ -64,7 +64,7 @@ ast::expr parser::parse_expr() {
     const auto unary_operator = opt.value();
     advance();
     auto operand = parse_expr();
-    return std::make_unique<ast::unary>(unary_operator, std::move(operand));
+    return ast::unary(unary_operator, std::move(operand));
   }
 
   throw std::runtime_error(std::format("malformed expression: found {}", current_token().lexeme()));
