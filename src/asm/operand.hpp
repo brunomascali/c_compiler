@@ -5,6 +5,7 @@
 #include <string>
 #include <variant>
 
+#include <ir/ir.hpp>
 #include "ast/ast.hpp"
 
 namespace x86 {
@@ -24,44 +25,35 @@ namespace x86 {
     BYTE, WORD, DWORD, QWORD
   };
 
-  struct sized_register {
-    reg id;
-    bit_width width;
-  };
-
-  // operand ::= imm(int) | register
+  // operand ::= imm(int) | register | identifier | stack
   struct operand {
-    using immediate = int;
-    std::variant<immediate, sized_register> value;
+    struct immediate { int value; };
+    struct sized_register {
+      reg id;
+      bit_width width;
+    };
+    using identifier = std::string;
+    struct stack { int32_t offset; };
 
-    explicit operand(int n) : value(n) {
-    }
+    std::variant<immediate, sized_register, identifier, stack> value;
 
-    explicit operand(sized_register r) : value(r) {
-    }
+    explicit operand(const ir::immediate imm) : value(immediate{.value=imm}) {}
+    explicit operand(sized_register r) : value(r) {}
+    explicit operand(identifier id) : value(id) {}
+    explicit operand(stack st) : value(st) {}
+
+    // explicit
 
     [[nodiscard]] std::string to_string() const;
   };
 
-  constexpr auto EAX = sized_register{reg::rax, bit_width::DWORD};
+  constexpr auto EAX = operand::sized_register{reg::rax, bit_width::DWORD};
+  constexpr auto R10D = operand::sized_register{reg::r10, bit_width::DWORD};
+  constexpr auto RBP = operand::sized_register{reg::rbp, bit_width::QWORD};
 }
 
-inline x86::operand ast_to_operand(const ast::expr &expr) {
-  return std::visit([](const auto &expr) -> x86::operand {
-    using T = std::decay_t<decltype(expr)>;
 
-    if constexpr (std::is_same_v<T, int>) {
-      return x86::operand(expr);
-    }
-    if constexpr (std::is_same_v<T, std::unique_ptr<ast::unary>>) {
-      return x86::operand(12);
-    }
-    // static_assert(false, "non-exhaustive visitor!");
-    return x86::operand(x86::EAX);
-  }, expr);
-}
-
-constexpr std::string_view to_string(const x86::sized_register &register_) {
+constexpr std::string_view to_string(const x86::operand::sized_register &register_) {
   const auto &[r, bit_width] = register_;
   using reg = x86::reg;
   if (bit_width == x86::bit_width::DWORD) {
@@ -128,10 +120,17 @@ struct std::formatter<x86::operand> {
   auto format(const x86::operand &op, std::format_context &ctx) const {
     return std::visit([&](auto &&arg) {
       using T = std::decay_t<decltype(arg)>;
-      if constexpr (std::is_same_v<T, int>) {
-        return std::format_to(ctx.out(), "${}", arg);
-      } else if constexpr (std::is_same_v<T, x86::sized_register>) {
+      if constexpr (std::is_same_v<T, x86::operand::immediate>) {
+        return std::format_to(ctx.out(), "${}", arg.value);
+      }
+      if constexpr (std::is_same_v<T, x86::operand::sized_register>) {
         return std::format_to(ctx.out(), "%{}", ::to_string(arg));
+      }
+      if constexpr (std::is_same_v<T, x86::operand::identifier>) {
+        return std::format_to(ctx.out(), "????");
+      }
+      if constexpr (std::is_same_v<T, x86::operand::stack>) {
+        return std::format_to(ctx.out(), "{}(%rbp)", arg.offset);
       }
     }, op.value);
   }

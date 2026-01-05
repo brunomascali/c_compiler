@@ -14,20 +14,39 @@ int main(const int argc, char** argv) {
 
     const auto source_code = utils::file::read(argv[1]);
     const auto tokens = lexer(source_code).tokenize();
-
-    std::println("found {} tokens", tokens.size());
-    for (const auto& token : tokens) std::println("{}", token);
-
     auto ast = parser(tokens).parse();
 
-    const auto asm_instructions = asm_emitter().emit(ast);
+    // std::println("found {} tokens", tokens.size());
+    // for (const auto& token : tokens) std::println("{}", token);
 
-    for (const auto& instruction : asm_emitter().emit(ast)) {
-        std::println("{}", instructions_visitor(instruction));
+    const auto ir_instructions = ir::ir_generator(ast).instructions();
+
+    auto ctx = x86::codegen_context();
+    auto asm_emitter = x86::asm_emitter(ctx);
+    const auto asm_instructions =
+        ir_instructions
+        | std::ranges::views::transform([&](const auto& ir) {
+                return asm_emitter.emit(ir);
+            })
+        | std::ranges::views::join
+        | std::ranges::to<std::vector<x86::instruction_t>>();
+
+    std::string result;
+    for (const auto& inst : asm_instructions) {
+        result += x86::to_string(inst);
+        result += '\n';
     }
 
-    std::vector<ir::instruction> ctx;
-    ir::from_statement_node(ctx, std::move(ast.statements.back().body.back()));
+    if (not utils::file::write("out.s", result)) {
+        throw std::runtime_error("Could not write to file");
+    }
+
+    if (std::system("gcc out.s") == 0) {
+        std::system("./a.out");
+        std::print("Return code: ");
+        int a = std::system("echo $status");
+        std::print("Return code: {}", a);
+    }
 
     return 0;
 }

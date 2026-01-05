@@ -49,9 +49,9 @@ namespace ast {
   };
 
   struct program {
-    std::vector<function> statements;
+    std::vector<function> functions;
 
-    explicit program(std::vector<function> f) : statements(std::move(f)) {}
+    explicit program(std::vector<function> f) : functions(std::move(f)) {}
   };
 }
 

@@ -5,8 +5,8 @@
 
 namespace x86 {
   struct mov {
-    mov(const operand s, const operand t)
-      : src(s), dst(t) {
+    mov(operand s, operand t)
+      : src(std::move(s)), dst(std::move(t)) {
     }
 
     operand src;

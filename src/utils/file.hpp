@@ -10,6 +10,7 @@ namespace utils {
     class file {
     public:
         static std::string read(const fs::path& filepath);
+        static bool write(const fs::path &filepath, std::string_view content);
     };
 }
 

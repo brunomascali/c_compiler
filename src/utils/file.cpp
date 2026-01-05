@@ -13,3 +13,10 @@ std::string utils::file::read(const fs::path &filepath) {
 
   return content;
 }
+
+bool utils::file::write(const fs::path &filepath, const std::string_view content) {
+  std::ofstream out(filepath);
+  out << content;
+  out.close();
+  return true;
+}

@@ -19,8 +19,8 @@ TEST(IR_TESTS, AST_EXPR_TO_IR) {
   auto expr = ast::expr(123);
   const auto ir = ir::from_expr_node(TODO, std::move(expr));
 
-  ASSERT_TRUE(std::holds_alternative<ir::value>(ir[0]));
-  const auto value = std::get<ir::value>(ir[0]);
+  ASSERT_TRUE(std::holds_alternative<ir::value_t>(ir[0]));
+  const auto value = std::get<ir::value_t>(ir[0]);
   ASSERT_TRUE(std::holds_alternative<int>(value));
   ASSERT_EQ(std::get<int>(value), 123);
 }

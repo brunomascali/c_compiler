@@ -1,30 +1,54 @@
-#ifndef C_COMPILER_ASMEMITTER_HPP
-#define C_COMPILER_ASMEMITTER_HPP
+#ifndef C_COMPILER_ASM_EMITTER_HPP
+#define C_COMPILER_ASM_EMITTER_HPP
 
+#include <map>
 #include <vector>
 
 #include "ret.hpp"
 #include "start_function.hpp"
 #include "mov.hpp"
-#include "ast/ast.hpp"
+#include "unary.hpp"
+#include "pop.hpp"
 
-class asm_emitter {
-public:
-  using instruction = std::variant<x86::start_function, x86::mov, x86::ret>;
+namespace x86 {
+  using instruction_t = std::variant<start_function, mov, ret, unary, pop>;
 
-  std::vector<instruction> emit(const ast::program &program);
+  class codegen_context;
 
-private:
-  std::vector<instruction> m_instructions;
+  class asm_emitter {
+  public:
+    explicit asm_emitter(codegen_context &ctx) : m_ctx(ctx) {
+    }
 
-  void visit_statement(const ast::statement &statement);
+    std::vector<instruction_t> emit(const ir::instruction &instr);
 
-  void asm_from_return_ast_node(const ast::return_stmt &statement);
+  private:
+    codegen_context &m_ctx;
 
-  void gen_from_function_ast_node(const ast::function &function);
-};
+    std::vector<instruction_t> handle_unary(const ir::unary_instruction &instruction);
 
-std::string instructions_visitor(asm_emitter::instruction instruction);
+    std::vector<instruction_t> handle_return(const ir::return_instruction &instruction);
+
+    std::vector<instruction_t> handle_start_function(const ir::start_function &instruction);
+
+    std::vector<instruction_t> fix_mov_instruction(const mov &instruction);
+
+    operand resolve_operand(const ir::value_t &value);
+  };
+
+  class codegen_context {
+  public:
+    int32_t get_or_create_stack_offset(std::string_view ir_var);
+
+    [[nodiscard]] int32_t total_stack_usage() const;
+
+  private:
+    std::map<std::string, int32_t> m_locals;
+    int32_t m_current_offset{0};
+  };
+
+  std::string to_string(instruction_t instruction);
+}
 
 
 #endif //C_COMPILER_ASMEMITTER_HPP
