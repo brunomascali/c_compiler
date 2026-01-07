@@ -27,6 +27,8 @@ namespace x86 {
 
     std::vector<instruction_t> handle_unary(const ir::unary_instruction &instruction);
 
+    std::vector<instruction_t> handle_binary(const ir::unary_instruction &instruction);
+
     std::vector<instruction_t> handle_return(const ir::return_instruction &instruction);
 
     std::vector<instruction_t> handle_start_function(const ir::start_function &instruction);

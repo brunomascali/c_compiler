@@ -21,6 +21,15 @@ namespace ir {
     value_t src, dst;
   };
 
+  struct binary_instruction {
+    binary_instruction(const ast::binary::op op, value_t arg1, value_t arg2, value_t dst)
+      : op(op), arg1(std::move(arg1)), arg2(std::move(arg2)), dst(std::move(dst)) {}
+
+    ast::binary::op op ;
+    value_t arg1, arg2, dst;
+  };
+
+
   struct return_instruction {
     explicit return_instruction(value_t v)
       : value(std::move(v)) {
@@ -41,7 +50,7 @@ namespace ir {
     std::string name;
   };
 
-  using instruction = std::variant<unary_instruction, return_instruction, start_function>;
+  using instruction = std::variant<unary_instruction, binary_instruction, return_instruction, start_function>;
 
   class ir_generator {
   public:
@@ -57,7 +66,6 @@ namespace ir {
     void from_statement_node(const ast::statement &stmt);
 
     value_t operand_from_expr_node(const ast::expr &expr);
-
 
     std::string new_variable();
 

@@ -24,17 +24,23 @@ namespace ir {
 
       if constexpr (std::is_same_v<T, int>) {
         return value_t(arg);
-      }
-      if constexpr (std::is_same_v<T, ast::unary>) {
-        auto src = operand_from_expr_node(std::move(*arg.exp));
+      } else if constexpr (std::is_same_v<T, std::unique_ptr<ast::unary> >) {
+        auto src = operand_from_expr_node(arg->expression);
         auto dst = value_t(new_variable());
-        m_instructions.emplace_back(unary_instruction{arg.operation, src, dst});
+        m_instructions.emplace_back(unary_instruction{arg->operation, src, dst});
+        return dst;
+      }
+      if constexpr (std::is_same_v<T, std::unique_ptr<ast::binary> >) {
+        auto lhs = operand_from_expr_node(arg->left);
+        auto rhs = operand_from_expr_node(arg->right);
+        auto dst = value_t(new_variable());
+        m_instructions.emplace_back(binary_instruction(arg->operation, lhs, rhs, dst));
         return dst;
       }
     }, expr);
   }
 
-  void ir_generator::from_statement_node(const ast::statement& stmt) {
+  void ir_generator::from_statement_node(const ast::statement &stmt) {
     std::visit([&](auto &&arg) {
       using T = std::decay_t<decltype(arg)>;
 

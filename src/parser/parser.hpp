@@ -3,8 +3,9 @@
 
 #include <vector>
 #include <memory>
-#include "../lexer/token.hpp"
-#include "../ast/ast.hpp"
+
+#include "ast/ast.hpp"
+#include "lexer/token.hpp"
 
 class parser {
 public:
@@ -24,6 +25,8 @@ private:
   ast::statement parse_statement();
 
   ast::expr parse_expr();
+
+  ast::expr parse_factor();
 
   [[nodiscard]] std::vector<token> tokens() const { return m_tokens; }
 

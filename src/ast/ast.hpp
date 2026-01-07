@@ -8,6 +8,8 @@
 #include <optional>
 #include <lexer/token.hpp>
 
+#include "ast.hpp"
+
 namespace x86 {
   struct instruction;
 }
@@ -16,22 +18,27 @@ namespace ast {
   struct unary;
   struct binary;
 
-  using expr = std::variant<int, unary>;
+  using expr = std::variant<int, std::unique_ptr<unary>, std::unique_ptr<binary>>;
 
   struct unary {
     enum class op { complement, negate };
 
     op operation;
-    std::unique_ptr<expr> exp;
+    expr expression;
 
-    unary(const op operation, expr e) : operation(operation), exp(std::make_unique<expr>(std::move(e))) {
-    }
+    unary(op o, expr e)
+        : operation(o), expression(std::move(e)) {}
   };
 
   struct binary {
+    enum class op { add, sub, mul, div, rem };
+
+    op operation;
     expr left;
-    std::string op;
     expr right;
+
+    binary(op o, expr l, expr r)
+      : operation(o), left(std::move(l)), right(std::move(r)) {}
   };
 
   struct return_stmt {
@@ -65,6 +72,24 @@ constexpr std::optional<ast::unary::op> try_unop_from_token_kind(const token::to
 
   for (const auto &[token_kind, unary_operator] : unary_operators) {
     if (token_kind == k) return unary_operator;
+  }
+
+  return std::nullopt;
+}
+
+constexpr std::optional<ast::binary::op> try_binop_from_token_kind(const token::token_kind k) {
+  using tk = token::token_kind;
+  using binop = ast::binary::op;
+  static std::vector<std::tuple<tk, binop>> binary_operators = {
+    {tk::plus, binop::add},
+    {tk::hyphen, binop::sub},
+    {tk::asterisk, binop::mul},
+    {tk::slash, binop::div},
+    {tk::percent, binop::rem},
+  };
+
+  for (const auto &[token_kind, binary_operator] : binary_operators) {
+    if (token_kind == k) return binary_operator;
   }
 
   return std::nullopt;
