@@ -1,5 +1,5 @@
-#include <print>
 #include <filesystem>
+#include <ranges>
 #include <utils/file.hpp>
 #include <lexer/lexer.hpp>
 #include <parser/parser.hpp>
@@ -14,7 +14,7 @@ int main(const int argc, char** argv) {
 
     const auto source_code = utils::file::read(argv[1]);
     const auto tokens = lexer(source_code).tokenize();
-    auto ast = parser(tokens).parse();
+    const auto ast = parser(tokens).parse();
 
     // std::println("found {} tokens", tokens.size());
     // for (const auto& token : tokens) std::println("{}", token);
@@ -36,16 +36,10 @@ int main(const int argc, char** argv) {
         result += x86::to_string(inst);
         result += '\n';
     }
+    result += ".section .note.GNU-stack,\"\",@progbits\n";
 
     if (not utils::file::write("out.s", result)) {
         throw std::runtime_error("Could not write to file");
-    }
-
-    if (std::system("gcc out.s") == 0) {
-        std::system("./a.out");
-        std::print("Return code: ");
-        int a = std::system("echo $status");
-        std::print("Return code: {}", a);
     }
 
     return 0;

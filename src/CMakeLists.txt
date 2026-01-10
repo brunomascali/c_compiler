@@ -11,7 +11,8 @@ foreach(lib ${ALL_LIBS})
     target_include_directories(${lib} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 endforeach()
 
-add_executable(c_compiler main.cpp)
+add_executable(c_compiler main.cpp
+)
 target_link_libraries(c_compiler PRIVATE
         utils_lib
         lexer_lib

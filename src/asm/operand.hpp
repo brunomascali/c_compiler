@@ -49,7 +49,11 @@ namespace x86 {
 
   constexpr auto EAX = operand::sized_register{reg::rax, bit_width::DWORD};
   constexpr auto R10D = operand::sized_register{reg::r10, bit_width::DWORD};
+  constexpr auto R11D = operand::sized_register{reg::r11, bit_width::DWORD};
   constexpr auto RBP = operand::sized_register{reg::rbp, bit_width::QWORD};
+  constexpr auto EDI = operand::sized_register{reg::rdi, bit_width::DWORD};
+  constexpr auto ESI = operand::sized_register{reg::rsi, bit_width::DWORD};
+  constexpr auto EDX = operand::sized_register{reg::rdx, bit_width::DWORD};
 }
 
 

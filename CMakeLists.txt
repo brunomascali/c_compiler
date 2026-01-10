@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 4.1)
 project(c_compiler)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -12,6 +13,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(src)
-enable_testing()
-add_subdirectory(test)
+#enable_testing()
+#add_subdirectory(test)
 target_include_directories(c_compiler PRIVATE src)

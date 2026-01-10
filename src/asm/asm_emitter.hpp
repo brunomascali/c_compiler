@@ -4,14 +4,16 @@
 #include <map>
 #include <vector>
 
+#include "binary.hpp"
 #include "ret.hpp"
 #include "start_function.hpp"
 #include "mov.hpp"
 #include "unary.hpp"
 #include "pop.hpp"
+#include "cdq.hpp"
 
 namespace x86 {
-  using instruction_t = std::variant<start_function, mov, ret, unary, pop>;
+  using instruction_t = std::variant<start_function, mov, ret, unary, binary, pop, cdq>;
 
   class codegen_context;
 
@@ -27,11 +29,13 @@ namespace x86 {
 
     std::vector<instruction_t> handle_unary(const ir::unary_instruction &instruction);
 
-    std::vector<instruction_t> handle_binary(const ir::unary_instruction &instruction);
+    std::vector<instruction_t> handle_binary(const ir::binary_instruction &instruction);
 
     std::vector<instruction_t> handle_return(const ir::return_instruction &instruction);
 
     std::vector<instruction_t> handle_start_function(const ir::start_function &instruction);
+
+    std::vector<instruction_t> fix_imul_instruction(const binary& instruction);
 
     std::vector<instruction_t> fix_mov_instruction(const mov &instruction);
 
