@@ -1,3 +1,1 @@
-int main(void) {
-  return 18 % 4;
-}
+int main(void) { return 18 % 4; }

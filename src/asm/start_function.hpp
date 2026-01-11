@@ -4,12 +4,14 @@
 #include <memory>
 #include <string>
 
-namespace x86 {
-  struct start_function {
+namespace x86
+{
+  struct start_function
+  {
     std::string name;
 
     explicit start_function(std::string n) : name(std::move(n)) {}
   };
-}
+}  // namespace x86
 
 #endif

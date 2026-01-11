@@ -1,10 +1,9 @@
 #include <iostream>
 
-#include "lexer.hpp"
 #include "gtest/gtest.h"
+#include "lexer.hpp"
 
-TEST(LEXER_TESTS, MINIMAL_PROGRAM)
-{
+TEST(LEXER_TESTS, MINIMAL_PROGRAM) {
   const std::string source_code = "int main(void) { return 0; }";
   const auto tokens = lexer(source_code).tokenize();
 

@@ -1,22 +1,22 @@
 #ifndef C_COMPILER_PARSER_HPP
 #define C_COMPILER_PARSER_HPP
 
-#include <vector>
-#include <memory>
+#include <generator>
 
 #include "ast/ast.hpp"
+#include "lexer/lexer.hpp"
 #include "lexer/token.hpp"
 
 class parser {
-public:
-  explicit parser(std::vector<token> tokens) : m_tokens(std::move(tokens)), m_idx(0) {
-  }
+ public:
+  explicit parser(lexer& l) : m_token_stream(l.tokenize_lazy()), m_it(m_token_stream.begin()) {}
 
   ast::program parse();
 
-private:
-  std::vector<token> m_tokens;
-  std::size_t m_idx;
+ private:
+  std::generator<token> m_token_stream;
+  using token_stream_iterator = std::ranges::iterator_t<std::generator<token>>;
+  token_stream_iterator m_it;
 
   ast::program parse_program();
 
@@ -28,18 +28,14 @@ private:
 
   ast::expr parse_factor();
 
-  [[nodiscard]] std::vector<token> tokens() const { return m_tokens; }
+  void advance() { ++m_it; }
 
-  [[nodiscard]] std::size_t index() const { return m_idx; }
+  [[nodiscard]] token current_token() const { return *m_it; }
 
-  void advance() { m_idx++; }
-
-  [[nodiscard]] token current_token() const { return m_tokens.at(m_idx); }
-
-  [[nodiscard]] token::token_kind current_token_kind() const { return m_tokens.at(m_idx).kind(); }
+  [[nodiscard]] token::token_kind current_token_kind() const { return (*m_it).kind(); }
 
   void expect_or_fail(token::token_kind kind) const;
 };
 
 
-#endif //C_COMPILER_PARSER_HPP
+#endif  // C_COMPILER_PARSER_HPP

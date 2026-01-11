@@ -5,13 +5,14 @@
 
 #include "operand.hpp"
 
-namespace x86 {
-  struct unary {
+namespace x86
+{
+  struct unary
+  {
     ast::unary::op unary_operator;
     operand dst;
 
-    unary(const ast::unary::op op, operand dst) : unary_operator(op), dst(std::move(dst)) {
-    }
+    unary(const ast::unary::op op, operand dst) : unary_operator(op), dst(std::move(dst)) {}
 
     std::string to_string() {
       switch (unary_operator) {
@@ -22,6 +23,6 @@ namespace x86 {
       }
     }
   };
-}
+}  // namespace x86
 
-#endif //C_COMPILER_UNARY_HPP
+#endif  // C_COMPILER_UNARY_HPP

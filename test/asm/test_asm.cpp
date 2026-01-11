@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "asm/start_function.hpp"
 #include "asm/ret.hpp"
+#include "asm/start_function.hpp"
 #include "gtest/gtest.h"
 
 template <typename T, typename Base>
@@ -33,9 +33,7 @@ TEST(ASM_TESTS, EXPR_TO_ASM) {
 }
 
 TEST(ASM_TESTS, RETURN_TO_ASM) {
-  const auto ast_ret = std::make_unique<statement_node>(
-    std::make_unique<expr_node>("123")
-  );
+  const auto ast_ret = std::make_unique<statement_node>(std::make_unique<expr_node>("123"));
 
   const auto asm_list = x86::ast_to_asm(ast_ret);
 

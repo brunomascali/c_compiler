@@ -1,8 +1,6 @@
 #include "parser.hpp"
 
-ast::program parser::parse() {
-  return parse_program();
-}
+ast::program parser::parse() { return parse_program(); }
 
 ast::program parser::parse_program() {
   std::vector<ast::function> functions;
@@ -32,7 +30,7 @@ ast::function parser::parse_function() {
   expect_or_fail(token::token_kind::brace_close);
   advance();
 
-  return ast::function{ identifier, std::move(statements) };
+  return ast::function{identifier, std::move(statements)};
 }
 
 ast::statement parser::parse_statement() {
