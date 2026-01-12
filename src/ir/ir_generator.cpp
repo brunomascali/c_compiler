@@ -1,4 +1,4 @@
-#include "ir.hpp"
+#include "ir_generator.hpp"
 
 namespace ir {
   ir_generator::ir_generator(const ast::program &root) {
@@ -18,23 +18,23 @@ namespace ir {
     }
   }
 
-  value_t ir_generator::operand_from_expr_node(const ast::expr &expr) {
+  value ir_generator::operand_from_expr_node(const ast::expr &expr) {
     return std::visit([&](auto &&arg) {
       using T = std::decay_t<decltype(arg)>;
 
       if constexpr (std::is_same_v<T, int>) {
-        return value_t(arg);
+        return value(arg);
       } else if constexpr (std::is_same_v<T, std::unique_ptr<ast::unary> >) {
         auto src = operand_from_expr_node(arg->expression);
-        auto dst = value_t(new_variable());
-        m_instructions.emplace_back(unary_instruction{arg->operation, src, dst});
+        auto dst = value(new_variable());
+        m_instructions.emplace_back(unary{arg->operation, src, dst});
         return dst;
       }
       if constexpr (std::is_same_v<T, std::unique_ptr<ast::binary> >) {
         auto lhs = operand_from_expr_node(arg->left);
         auto rhs = operand_from_expr_node(arg->right);
-        auto dst = value_t(new_variable());
-        m_instructions.emplace_back(binary_instruction(arg->operation, lhs, rhs, dst));
+        auto dst = value(new_variable());
+        m_instructions.emplace_back(binary(arg->operation, lhs, rhs, dst));
         return dst;
       }
     }, expr);
@@ -46,7 +46,7 @@ namespace ir {
 
       if constexpr (std::is_same_v<T, ast::return_stmt>) {
         auto src = operand_from_expr_node(std::move(arg.expression));
-        m_instructions.emplace_back(return_instruction(std::move(src)));
+        m_instructions.emplace_back(return_(std::move(src)));
       }
     }, stmt);
   }

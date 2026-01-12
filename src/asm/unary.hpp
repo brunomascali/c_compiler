@@ -1,5 +1,5 @@
-#ifndef C_COMPILER_UNARY_HPP
-#define C_COMPILER_UNARY_HPP
+#ifndef C_COMPILER_X86_UNARY_HPP
+#define C_COMPILER_X86_UNARY_HPP
 
 #include <utility>
 
@@ -24,4 +24,4 @@ namespace x86 {
   };
 }
 
-#endif //C_COMPILER_UNARY_HPP
+#endif //C_COMPILER_X86_UNARY_HPP

@@ -1,5 +1,5 @@
-#ifndef C_COMPILER_BINARY_H
-#define C_COMPILER_BINARY_H
+#ifndef C_COMPILER_X86_BINARY_H
+#define C_COMPILER_X86_BINARY_H
 
 #include <utility>
 
@@ -37,4 +37,4 @@ namespace x86
   };
 }
 
-#endif //C_COMPILER_BINARY_H
+#endif //C_COMPILER_X86_BINARY_H

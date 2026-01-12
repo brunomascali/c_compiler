@@ -16,14 +16,14 @@ namespace x86
   std::vector<instruction_t> asm_emitter::emit(const ir::instruction& instr)
   {
     return std::visit(overloaded{
-                        [&](const ir::unary_instruction& i) { return handle_unary(i); },
-                        [&](const ir::binary_instruction& i) { return handle_binary(i); },
-                        [&](const ir::return_instruction& i) { return handle_return(i); },
+                        [&](const ir::unary& i) { return handle_unary(i); },
+                        [&](const ir::binary& i) { return handle_binary(i); },
+                        [&](const ir::return_& i) { return handle_return(i); },
                         [&](const ir::start_function& i) { return handle_start_function(i); },
                       }, instr);
   }
 
-  std::vector<instruction_t> asm_emitter::handle_unary(const ir::unary_instruction& instruction)
+  std::vector<instruction_t> asm_emitter::handle_unary(const ir::unary& instruction)
   {
     const auto src = resolve_operand(instruction.src);
     const auto dst = resolve_operand(instruction.dst);
@@ -36,7 +36,7 @@ namespace x86
     return instructions;
   }
 
-  std::vector<instruction_t> asm_emitter::handle_binary(const ir::binary_instruction& instruction)
+  std::vector<instruction_t> asm_emitter::handle_binary(const ir::binary& instruction)
   {
     std::vector<instruction_t> instructions;
 
@@ -74,9 +74,9 @@ namespace x86
     return instructions;
   }
 
-  std::vector<instruction_t> asm_emitter::handle_return(const ir::return_instruction& instruction)
+  std::vector<instruction_t> asm_emitter::handle_return(const ir::return_& instruction)
   {
-    const auto src = resolve_operand(instruction.value);
+    const auto src = resolve_operand(instruction.val);
     const auto eax = operand(EAX);
     const auto rbp = operand(RBP);
     return {
@@ -122,7 +122,7 @@ namespace x86
   }
 
 
-  operand asm_emitter::resolve_operand(const ir::value_t& value)
+  operand asm_emitter::resolve_operand(const ir::value& value)
   {
     return std::visit(overloaded{
                         [&](const ir::immediate& imm)
@@ -136,7 +136,7 @@ namespace x86
                           };
                           return operand(offset);
                         }
-                      }, value);
+                      }, value.inner);
   }
 
   int32_t codegen_context::get_or_create_stack_offset(const std::string_view ir_var)

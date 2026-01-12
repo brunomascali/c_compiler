@@ -5,8 +5,8 @@
 #include <string>
 #include <variant>
 
-#include <ir/ir.hpp>
 #include "ast/ast.hpp"
+#include <ir/ir_generator.hpp>
 
 namespace x86 {
   enum class reg {

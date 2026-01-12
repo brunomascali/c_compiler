@@ -6,7 +6,7 @@
 #include <print>
 
 #include "asm/asm_emitter.hpp"
-#include "ir/ir.hpp"
+#include "ir/ir_generator.hpp"
 
 int main(const int argc, char** argv) {
     if (argc == 1) {
