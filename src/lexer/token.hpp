@@ -18,6 +18,11 @@ public:
     semicolon,
     hyphen, tilde,
     plus, asterisk, slash, percent,
+
+    // operators
+    negation, double_ampersand, double_pipe,
+    double_eq, neq, lt, gt,
+    le, ge,
   };
 
   explicit token(const token_kind k, std::string lexeme = "") : m_kind(k), m_lexeme(std::move(lexeme)) {
@@ -44,6 +49,14 @@ inline std::optional<int> precedence(const token::token_kind kind) {
     case tk::percent: return 50;
     case tk::int_kw:
     case tk::hyphen: return 45;
+    case tk::lt:
+    case tk::gt:
+    case tk::le:
+    case tk::ge: return 35;
+    case tk::neq:
+    case tk::double_eq: return 30;
+    case tk::double_ampersand: return 10;
+    case tk::double_pipe: return 5;
     default: return std::nullopt;
   }
 }
@@ -80,6 +93,32 @@ struct std::formatter<token::token_kind> {
       case token::token_kind::hyphen: name = "-";
         break;
       case token::token_kind::tilde: name = "~";
+        break;
+      case token::token_kind::plus: name = "+";
+        break;
+      case token::token_kind::asterisk: name = "*";
+        break;
+      case token::token_kind::slash: name = "/";
+        break;
+      case token::token_kind::percent: name = "%";
+        break;
+      case token::token_kind::negation: name = "!";
+        break;
+      case token::token_kind::double_ampersand: name = "&&";
+        break;
+      case token::token_kind::double_pipe: name = "||";
+        break;
+      case token::token_kind::double_eq: name = "==";
+        break;
+      case token::token_kind::neq: name = "!=";
+        break;
+      case token::token_kind::lt: name = "<";
+        break;
+      case token::token_kind::gt: name = ">";
+        break;
+      case token::token_kind::le: name = "<=";
+        break;
+      case token::token_kind::ge: name = ">=";
         break;
     }
     return std::format_to(ctx.out(), "{}", name);

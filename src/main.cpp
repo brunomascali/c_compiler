@@ -3,6 +3,7 @@
 #include <utils/file.hpp>
 #include <lexer/lexer.hpp>
 #include <parser/parser.hpp>
+#include <print>
 
 #include "asm/asm_emitter.hpp"
 #include "ir/ir.hpp"
@@ -16,8 +17,8 @@ int main(const int argc, char** argv) {
     const auto tokens = lexer(source_code).tokenize();
     const auto ast = parser(tokens).parse();
 
-    // std::println("found {} tokens", tokens.size());
-    // for (const auto& token : tokens) std::println("{}", token);
+    std::println("found {} tokens", tokens.size());
+    for (const auto& token : tokens) std::println("{}", token);
 
     const auto ir_instructions = ir::ir_generator(ast).instructions();
 
