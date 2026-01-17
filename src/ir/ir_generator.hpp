@@ -7,13 +7,19 @@
 
 #include <ast/ast.hpp>
 #include <ir/binary.hpp>
+#include <ir/copy.hpp>
 #include <ir/function.hpp>
+#include <ir/jump.hpp>
+#include <ir/jump_if_not_zero.hpp>
+#include <ir/jump_if_zero.hpp>
+#include <ir/label.hpp>
 #include <ir/return.hpp>
 #include <ir/unary.hpp>
 
 namespace ir {
 
-using instruction = std::variant<unary, binary, return_, start_function>;
+using instruction = std::variant<unary, binary, return_, start_function, copy,
+                                 jump, jump_if_not_zero, jump_if_zero, label>;
 
 class ir_generator {
 public:

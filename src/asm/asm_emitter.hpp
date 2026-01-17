@@ -5,16 +5,20 @@
 #include <vector>
 
 #include "binary.hpp"
-#include "ret.hpp"
-#include "start_function.hpp"
-#include "mov.hpp"
-#include "unary.hpp"
-#include "pop.hpp"
 #include "cdq.hpp"
+#include "mov.hpp"
+#include "pop.hpp"
+#include "ret.hpp"
+#include "set.hpp"
+#include "start_function.hpp"
+#include "unary.hpp"
+
+#include <asm/cmp.hpp>
+#include <asm/jump.hpp>
 #include <ir/unary.hpp>
 
 namespace x86 {
-  using instruction_t = std::variant<start_function, mov, ret, unary, binary, pop, cdq>;
+  using instruction_t = std::variant<start_function, mov, ret, unary, binary, pop, cdq, jump, cmp, set>;
 
   class codegen_context;
 
@@ -35,6 +39,16 @@ namespace x86 {
     std::vector<instruction_t> handle_return(const ir::return_ &instruction);
 
     std::vector<instruction_t> handle_start_function(const ir::start_function &instruction);
+
+    std::vector<instruction_t> handle_copy(const ir::copy &instruction);
+
+    std::vector<instruction_t> handle_jump(const ir::jump &instruction);
+
+    std::vector<instruction_t> handle_jump_if_zero(const ir::jump_if_zero &instruction);
+
+    std::vector<instruction_t> handle_jump_if_not_zero(const ir::jump_if_not_zero &instruction);
+
+    std::vector<instruction_t> handle_label(const ir::label &instruction);
 
     std::vector<instruction_t> fix_imul_instruction(const binary& instruction);
 

@@ -32,6 +32,7 @@ int main(const int argc, char** argv) {
         | std::ranges::views::join
         | std::ranges::to<std::vector<x86::instruction_t>>();
 
+
     std::string result;
     for (const auto& inst : asm_instructions) {
         result += x86::to_string(inst);
@@ -42,6 +43,5 @@ int main(const int argc, char** argv) {
     if (not utils::file::write("out.s", result)) {
         throw std::runtime_error("Could not write to file");
     }
-
     return 0;
 }
