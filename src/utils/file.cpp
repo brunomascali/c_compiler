@@ -1,8 +1,8 @@
-#include "file.hpp"
-
 #include <fstream>
 
-std::string utils::file::read(const fs::path &filepath) {
+#include "file.hpp"
+
+std::string utils::file_reader::read_all(const fs::path &filepath) {
   if (!fs::exists(filepath)) {
     throw std::invalid_argument(std::format("File does not exist: {}", filepath.string()));
   }
@@ -14,9 +14,6 @@ std::string utils::file::read(const fs::path &filepath) {
   return content;
 }
 
-bool utils::file::write(const fs::path &filepath, const std::string_view content) {
-  std::ofstream out(filepath);
-  out << content;
-  out.close();
-  return true;
+void utils::file_writer::write_line(const std::string_view line) {
+  if (m_stream.is_open()) m_stream << line << '\n';
 }

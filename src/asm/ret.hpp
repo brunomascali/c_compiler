@@ -3,13 +3,13 @@
 
 #include <string>
 
-namespace x86 {
-  struct ret {
-    [[nodiscard]] std::string to_string() const {
-      return "ret";
-    }
+namespace x86
+{
+  struct ret
+  {
+    [[nodiscard]] std::string to_string() const { return "ret"; }
   };
-}
+}  // namespace x86
 
 // template<>
 // struct std::formatter<x86::ret> {
@@ -20,4 +20,4 @@ namespace x86 {
 //   }
 // };
 
-#endif //C_COMPILER_RET_HPP
+#endif  // C_COMPILER_RET_HPP
