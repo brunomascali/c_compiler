@@ -5,9 +5,8 @@ add_subdirectory(parser)
 add_subdirectory(ast)
 add_subdirectory(asm)
 add_subdirectory(ir)
-add_subdirectory(pipeline)
 
-set(ALL_LIBS lexer_lib parser_lib ast_lib utils_lib asm_lib ir_lib pipeline_lib)
+set(ALL_LIBS lexer_lib parser_lib ast_lib utils_lib asm_lib ir_lib)
 
 foreach (lib ${ALL_LIBS})
     target_include_directories(${lib} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -22,5 +21,4 @@ target_link_libraries(c_compiler PRIVATE
         parser_lib
         asm_lib
         ir_lib
-        pipeline_lib
 )

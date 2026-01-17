@@ -2,7 +2,8 @@
 
 #include <regex>
 
-std::generator<token> lexer::tokenize_lazy() {
+std::vector<token> lexer::tokenize() {
+  std::vector<token> tokens;
   const auto begin = std::sregex_iterator(m_source.begin(), m_source.end(), m_regex);
   const auto end = std::sregex_iterator();
 
@@ -11,9 +12,10 @@ std::generator<token> lexer::tokenize_lazy() {
 
     for (size_t j = 1; j < match.size(); ++j) {
       if (match[j].matched) {
-        co_yield token(m_kinds[j - 1], match.str());
+        tokens.emplace_back(m_kinds[j - 1], match.str());
         break;
       }
     }
   }
+  return tokens;
 }

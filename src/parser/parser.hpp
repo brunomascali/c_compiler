@@ -9,14 +9,14 @@
 
 class parser {
  public:
-  explicit parser(lexer& l) : m_token_stream(l.tokenize_lazy()), m_it(m_token_stream.begin()) {}
+  explicit parser(std::vector<token> tokens) : m_tokens(std::move(tokens)), m_idx(0) {
+  }
 
   ast::program parse();
 
  private:
-  std::generator<token> m_token_stream;
-  using token_stream_iterator = std::ranges::iterator_t<std::generator<token>>;
-  token_stream_iterator m_it;
+  std::vector<token> m_tokens;
+  std::size_t m_idx;
 
   ast::program parse_program();
 
@@ -28,11 +28,11 @@ class parser {
 
   ast::expr parse_factor();
 
-  void advance() { ++m_it; }
+  void advance() { m_idx++; }
 
-  [[nodiscard]] token current_token() const { return *m_it; }
+  [[nodiscard]] token current_token() const { return m_tokens.at(m_idx); }
 
-  [[nodiscard]] token::token_kind current_token_kind() const { return (*m_it).kind(); }
+  [[nodiscard]] token::token_kind current_token_kind() const { return m_tokens.at(m_idx).kind(); }
 
   void expect_or_fail(token::token_kind kind) const;
 };

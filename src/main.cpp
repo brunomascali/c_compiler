@@ -13,7 +13,7 @@ int main(const int argc, char** argv) {
         throw std::invalid_argument("No arguments provided");
     }
 
-    const auto source_code = utils::file::read(argv[1]);
+    const auto source_code = utils::file_reader::read_all(argv[1]);
     const auto tokens = lexer(source_code).tokenize();
     const auto ast = parser(tokens).parse();
 
@@ -32,16 +32,11 @@ int main(const int argc, char** argv) {
         | std::ranges::views::join
         | std::ranges::to<std::vector<x86::instruction_t>>();
 
-
-    std::string result;
+    utils::file_writer writer("out.s");
     for (const auto& inst : asm_instructions) {
-        result += x86::to_string(inst);
-        result += '\n';
+      writer.write_line(x86::to_string(inst));
     }
-    result += ".section .note.GNU-stack,\"\",@progbits\n";
+    writer.write_line(".section .note.GNU-stack,\"\",@progbits\n");
 
-    if (not utils::file::write("out.s", result)) {
-        throw std::runtime_error("Could not write to file");
-    }
     return 0;
 }
