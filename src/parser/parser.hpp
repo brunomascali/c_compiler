@@ -9,8 +9,7 @@
 
 class parser {
  public:
-  explicit parser(std::vector<token> tokens) : m_tokens(std::move(tokens)), m_idx(0) {
-  }
+  explicit parser(std::vector<token> tokens) : m_tokens(std::move(tokens)), m_idx(0) {}
 
   ast::program parse();
 
@@ -22,9 +21,13 @@ class parser {
 
   ast::function parse_function();
 
+  ast::block_item parse_block_item();
+
   ast::statement parse_statement();
 
-  ast::expr parse_expr();
+  ast::declaration parse_declaration();
+
+  ast::expr parse_expr(int min_prec = 0);
 
   ast::expr parse_factor();
 
@@ -33,6 +36,8 @@ class parser {
   [[nodiscard]] token current_token() const { return m_tokens.at(m_idx); }
 
   [[nodiscard]] token::token_kind current_token_kind() const { return m_tokens.at(m_idx).kind(); }
+
+  [[nodiscard]] token peek() const { return m_tokens.at(m_idx + 1); }
 
   void expect_or_fail(token::token_kind kind) const;
 };

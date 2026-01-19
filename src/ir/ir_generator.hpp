@@ -32,6 +32,8 @@ public:
 private:
   void from_function_node(const ast::function &func);
 
+  void from_block_item_node(const ast::block_item &stmt);
+
   void from_statement_node(const ast::statement &stmt);
 
   value operand_from_expr_node(const ast::expr &expr);

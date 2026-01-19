@@ -11,6 +11,9 @@ namespace x86
 
     operand src;
   };
+
+  [[nodiscard]] inline std::string to_string(const pop& p) { return std::format("  popq {}", p.src); }
+
 }  // namespace x86
 
 #endif  // C_COMPILER_POP_HPP

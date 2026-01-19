@@ -9,15 +9,8 @@ namespace x86
   {
     [[nodiscard]] std::string to_string() const { return "ret"; }
   };
-}  // namespace x86
 
-// template<>
-// struct std::formatter<x86::ret> {
-//   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
-//
-//   auto format(const x86::ret &, std::format_context &ctx) const {
-//     return std::format_to(ctx.out(), "ret");
-//   }
-// };
+  [[nodiscard]] inline std::string to_string(const ret&) { return "  ret"; }
+}  // namespace x86
 
 #endif  // C_COMPILER_RET_HPP

@@ -1,3 +1,5 @@
 int main(void) {
-  return 2 > 3;
+  int a = 3;
+  int b = 4;
+  return 12 + a * b;
 }

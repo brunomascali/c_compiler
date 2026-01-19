@@ -16,7 +16,7 @@ public:
     paren_open, paren_close,
     brace_open, brace_close,
     semicolon,
-    hyphen, tilde,
+    equal, hyphen, tilde,
     plus, asterisk, slash, percent,
 
     // operators
@@ -47,7 +47,7 @@ inline std::optional<int> precedence(const token::token_kind kind) {
     case tk::asterisk:
     case tk::slash:
     case tk::percent: return 50;
-    case tk::int_kw:
+    case tk::plus:
     case tk::hyphen: return 45;
     case tk::lt:
     case tk::gt:
@@ -57,6 +57,7 @@ inline std::optional<int> precedence(const token::token_kind kind) {
     case tk::double_eq: return 30;
     case tk::double_ampersand: return 10;
     case tk::double_pipe: return 5;
+    case tk::equal: return 1;
     default: return std::nullopt;
   }
 }

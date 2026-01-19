@@ -6,6 +6,7 @@
 #include <print>
 
 #include "asm/asm_emitter.hpp"
+#include <asm/codegen_context.hpp>
 #include "ir/ir_generator.hpp"
 
 int main(const int argc, char** argv) {

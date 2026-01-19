@@ -10,94 +10,135 @@
 
 #include "ast.hpp"
 
-namespace x86 {
-struct instruction;
+namespace x86
+{
+  struct instruction;
 }
 
-namespace ast {
-struct unary;
-struct binary;
+namespace ast
+{
+  struct unary;
+  struct binary;
+  struct variable;
+  struct assignment;
 
-using expr = std::variant<int, std::unique_ptr<unary>, std::unique_ptr<binary>>;
+  using expr = std::variant<int, std::unique_ptr<unary>, std::unique_ptr<binary>, std::unique_ptr<variable>,
+                            std::unique_ptr<assignment>>;
 
-struct unary {
-  enum class op { complement, negate };
+  struct unary
+  {
+    enum class op
+    {
+      not_,
+      negate
+    };
 
-  op operation;
-  expr expression;
+    op operation;
+    expr expression;
 
-  unary(const op o, expr e) : operation(o), expression(std::move(e)) {}
-};
+    unary(const op o, expr e) : operation(o), expression(std::move(e)) {}
+  };
 
-struct binary {
-  enum class op { add, sub, mul, div, rem, and_, or_, eq, neq, lt, gt, le, ge };
+  struct binary
+  {
+    enum class op
+    {
+      add,
+      sub,
+      mul,
+      div,
+      rem,
+      and_,
+      or_,
+      eq,
+      neq,
+      lt,
+      gt,
+      le,
+      ge,
+      assign
+    };
 
-  op operation;
-  expr left;
-  expr right;
+    op operation;
+    expr left;
+    expr right;
 
-  binary(const op o, expr l, expr r)
-      : operation(o), left(std::move(l)), right(std::move(r)) {}
-};
+    binary(const op o, expr l, expr r) : operation(o), left(std::move(l)), right(std::move(r)) {}
+  };
 
-struct return_stmt {
-  expr expression;
-};
+  struct variable
+  {
+    explicit variable(std::string n) : identifier(std::move(n)) {}
+    std::string identifier;
+  };
 
-using statement = std::variant<return_stmt>;
+  struct assignment
+  {
+    assignment(expr a, expr b) : lhs(std::move(a)), rhs(std::move(b)) {}
+    expr lhs;
+    expr rhs;
+  };
 
-struct function {
-  std::string name;
-  std::vector<statement> body;
+  struct return_stmt
+  {
+    expr expression;
+  };
 
-  function(std::string n, std::vector<statement> b)
-      : name(std::move(n)), body(std::move(b)) {}
-};
+  struct declaration
+  {
+    declaration(std::string id, std::optional<expr> e) : identifier(std::move(id)), expression(std::move(e)) {}
+    std::string identifier;
+    std::optional<expr> expression;
+  };
 
-struct program {
-  std::vector<function> functions;
+  using statement = std::variant<return_stmt, expr, std::monostate>;
+  using block_item = std::variant<statement, declaration>;
 
-  explicit program(std::vector<function> f) : functions(std::move(f)) {}
-};
-} // namespace ast
+  struct function
+  {
+    std::string name;
+    std::vector<block_item> body;
 
-constexpr std::optional<ast::unary::op>
-try_unop_from_token_kind(const token::token_kind k) {
+    function(std::string n, std::vector<block_item> b) : name(std::move(n)), body(std::move(b)) {}
+  };
+
+  struct program
+  {
+    std::vector<function> functions;
+
+    explicit program(std::vector<function> f) : functions(std::move(f)) {}
+  };
+}  // namespace ast
+
+constexpr std::optional<ast::unary::op> try_unop_from_token_kind(const token::token_kind k) {
   using tk = token::token_kind;
   using unop = ast::unary::op;
   static std::vector<std::tuple<tk, unop>> unary_operators = {
-      {tk::tilde, unop::negate},
-      {tk::hyphen, unop::complement},
-      {tk::negation, unop::negate}};
+    {tk::tilde, unop::negate}, {tk::hyphen, unop::not_}, {tk::negation, unop::negate}};
 
   for (const auto &[token_kind, unary_operator] : unary_operators) {
-    if (token_kind == k)
-      return unary_operator;
+    if (token_kind == k) return unary_operator;
   }
 
   return std::nullopt;
 }
 
-constexpr std::optional<ast::binary::op>
-try_binop_from_token_kind(const token::token_kind k) {
+constexpr std::optional<ast::binary::op> try_binop_from_token_kind(const token::token_kind k) {
   using tk = token::token_kind;
   using binop = ast::binary::op;
   static std::vector<std::tuple<tk, binop>> binary_operators = {
-      {tk::plus, binop::add},        {tk::hyphen, binop::sub},
-      {tk::asterisk, binop::mul},    {tk::slash, binop::div},
-      {tk::percent, binop::rem},     {tk::double_ampersand, binop::and_},
-      {tk::double_pipe, binop::or_}, {tk::double_eq, binop::eq},
-      {tk::neq, binop::neq},         {tk::lt, binop::lt},
-      {tk::gt, binop::gt},           {tk::le, binop::le},
-      {tk::ge, binop::le},
+    {tk::plus, binop::add},        {tk::hyphen, binop::sub},   {tk::asterisk, binop::mul},
+    {tk::slash, binop::div},       {tk::percent, binop::rem},  {tk::double_ampersand, binop::and_},
+    {tk::double_pipe, binop::or_}, {tk::double_eq, binop::eq}, {tk::neq, binop::neq},
+    {tk::lt, binop::lt},           {tk::gt, binop::gt},        {tk::le, binop::le},
+    {tk::ge, binop::le},           {tk::equal, binop::assign},
   };
 
   for (const auto &[token_kind, binary_operator] : binary_operators) {
-    if (token_kind == k)
-      return binary_operator;
+    if (token_kind == k) return binary_operator;
   }
 
   return std::nullopt;
 }
 
-#endif // C_COMPILER_AST_HPP
+#endif  // C_COMPILER_AST_HPP
