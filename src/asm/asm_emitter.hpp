@@ -35,26 +35,7 @@ namespace x86
 
     std::vector<instruction_t> handle_label(const ir::label &instruction);
 
-    std::vector<instruction_t> resolve_instructions(const std::initializer_list<instruction_t> &instructions) {
-      std::vector<instruction_t> resolved_instructions;
-      for (const auto &inst : instructions) {
-        std::visit(
-          [&](auto &&arg)
-          {
-            if constexpr (requires { legalize(arg); }) {
-              for (const auto &legalized_instruction : legalize(arg)) {
-                resolved_instructions.emplace_back(legalized_instruction);
-              }
-            }
-            else {
-              resolved_instructions.emplace_back(inst);
-            }
-          },
-          inst);
-      }
-
-      return resolved_instructions;
-    }
+    std::vector<instruction_t> resolve_instructions(const std::vector<instruction_t>& instructions);
 
     std::vector<instruction_t> resolve_imul_operands(const binary &instruction);
 

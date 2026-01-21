@@ -16,7 +16,7 @@ namespace x86
   overloaded(Ts...) -> overloaded<Ts...>;
 
   std::vector<instruction_t> asm_emitter::emit(const ir::instruction &instr) {
-    return std::visit(
+    const auto instructions = std::visit(
       overloaded{
         [&](const ir::unary &i) { return handle_unary(i); },
         [&](const ir::binary &i) { return handle_binary(i); },
@@ -30,13 +30,15 @@ namespace x86
         [&](const ir::label &i) { return handle_label(i); },
       },
       instr);
+
+    return resolve_instructions(instructions);
   }
 
   std::vector<instruction_t> asm_emitter::handle_unary(const ir::unary &instruction) {
     const auto src = resolve_operand(instruction.src);
     const auto dst = resolve_operand(instruction.dst);
 
-    return resolve_instructions({mov(src, dst), unary(instruction.op, dst)});
+    return {mov(src, dst), unary(instruction.op, dst)};
   }
 
   std::vector<instruction_t> asm_emitter::handle_binary(const ir::binary &instruction) {
@@ -49,14 +51,14 @@ namespace x86
       case ast::binary::op::add:
       case ast::binary::op::sub:
       case ast::binary::op::mul:
-        return resolve_instructions({mov(src1, dst), binary(op, src2, dst)});
+        return {mov(src1, dst), binary(op, src2, dst)};
       case ast::binary::op::div:
-        return resolve_instructions({mov(src1, operand(EAX)), mov(src2, operand(ESI)), cdq{},
-                                     binary(op, src2, operand(ESI)), mov(operand(EAX), dst)});
+        return {mov(src1, operand(EAX)), mov(src2, operand(ESI)), cdq{}, binary(op, src2, operand(ESI)),
+                mov(operand(EAX), dst)};
 
       case ast::binary::op::rem:
-        return resolve_instructions({mov(src1, operand(EAX)), mov(src2, operand(ESI)), cdq{},
-                                     binary(op, src2, operand(ESI)), mov(operand(EDX), dst)});
+        return {mov(src1, operand(EAX)), mov(src2, operand(ESI)), cdq{}, binary(op, src2, operand(ESI)),
+                mov(operand(EDX), dst)};
 
       case ast::binary::op::eq:
       case ast::binary::op::neq:
@@ -64,43 +66,42 @@ namespace x86
       case ast::binary::op::le:
       case ast::binary::op::gt:
       case ast::binary::op::ge:
-        return resolve_instructions({
+        return {
           cmp(src1, src2),
           set(instruction.op, operand(AL)),
           mov(operand(AL), dst, bit_width::byte),
-        });
+        };
     }
   }
 
   std::vector<instruction_t> asm_emitter::handle_return(const ir::return_ &instruction) {
     const auto src = resolve_operand(instruction.val);
 
-    return resolve_instructions({
+    return {
       mov(src, EAX),
       pop(RBP),
       ret{},
-    });
+    };
   }
 
   std::vector<instruction_t> asm_emitter::handle_start_function(const ir::start_function &instruction) {
-    return resolve_instructions({start_function(instruction.name)});
+    return {start_function(instruction.name)};
   }
 
   std::vector<instruction_t> asm_emitter::handle_copy(const ir::copy &instruction) {
     const auto src = resolve_operand(instruction.src);
     const auto dst = resolve_operand(instruction.dst);
 
-    return resolve_instructions({mov(src, dst)});
+    return {mov(src, dst)};
   }
 
   std::vector<instruction_t> asm_emitter::handle_jump(const ir::jump &instruction) {
     using cc = jmp::condition;
-    return resolve_instructions({jmp(cc::none, instruction.target)});
+    return {jmp(cc::none, instruction.target)};
   }
 
   std::vector<instruction_t> asm_emitter::handle_jump_if_zero(const ir::jump_if_zero &instruction) {
-    return resolve_instructions(
-      {cmp(0, resolve_operand(instruction.condition)), jmp(jmp::condition::E, instruction.target)});
+    return {cmp(0, resolve_operand(instruction.condition)), jmp(jmp::condition::E, instruction.target)};
   }
 
   std::vector<instruction_t> asm_emitter::handle_jump_if_not_zero(const ir::jump_if_not_zero &instruction) {
@@ -108,7 +109,30 @@ namespace x86
   }
 
   std::vector<instruction_t> asm_emitter::handle_label(const ir::label &instruction) {
-    return resolve_instructions({label(instruction.name)});
+    return {label(instruction.name)};
+  }
+
+  std::vector<instruction_t> asm_emitter::resolve_instructions(const std::vector<instruction_t> &instructions) {
+    {
+      std::vector<instruction_t> resolved_instructions;
+      for (const auto &inst : instructions) {
+        std::visit(
+          [&](auto &&arg)
+          {
+            if constexpr (requires { legalize(arg); }) {
+              for (const auto &legalized_instruction : legalize(arg)) {
+                resolved_instructions.emplace_back(legalized_instruction);
+              }
+            }
+            else {
+              resolved_instructions.emplace_back(inst);
+            }
+          },
+          inst);
+      }
+
+      return resolved_instructions;
+    }
   }
 
   std::vector<instruction_t> asm_emitter::resolve_cmp_operands(const cmp &instruction) {

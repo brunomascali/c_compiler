@@ -65,13 +65,27 @@ namespace ir
             m_instructions.emplace_back(copy(value(0), result));
             m_instructions.emplace_back(label(end_label));
             return result;
-          } else {
-            auto lhs = operand_from_expr_node(arg->left);
-            auto rhs = operand_from_expr_node(arg->right);
-            auto dst = value(new_variable());
-            m_instructions.emplace_back(binary(arg->operation, lhs, rhs, dst));
-            return dst;
           }
+          if (arg->operation == ast::binary::op::or_) {
+            auto true_label = new_variable();
+            auto result = value(new_variable());
+            auto end_label = new_variable();
+            auto lhs = operand_from_expr_node(arg->left);
+            m_instructions.emplace_back(jump_if_not_zero(true_label, lhs));
+            auto rhs = operand_from_expr_node(arg->right);
+            m_instructions.emplace_back(jump_if_not_zero(true_label, rhs));
+            m_instructions.emplace_back(copy(value(0), result));
+            m_instructions.emplace_back(jump(end_label));
+            m_instructions.emplace_back(label(true_label));
+            m_instructions.emplace_back(copy(value(1), result));
+            m_instructions.emplace_back(label(end_label));
+            return result;
+          }
+          auto lhs = operand_from_expr_node(arg->left);
+          auto rhs = operand_from_expr_node(arg->right);
+          auto dst = value(new_variable());
+          m_instructions.emplace_back(binary(arg->operation, lhs, rhs, dst));
+          return dst;
         }
         else if constexpr (std::is_same_v<T, std::unique_ptr<ast::variable>>) {
           return value(arg->identifier);
