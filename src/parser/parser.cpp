@@ -83,7 +83,7 @@ ast::expr parser::parse_expr(int min_prec) {
 
   while (true) {
     auto op_kind = current_token_kind();
-    auto op_opt = try_binop_from_token_kind(op_kind);
+    auto op_opt = binop_from_token_kind(op_kind);
 
     // 1. Break if not a binary operator
     if (!op_opt.has_value()) break;
@@ -124,7 +124,7 @@ ast::expr parser::parse_factor() {
   }
 
   // unary
-  if (const auto opt = try_unop_from_token_kind(current_token_kind()); opt.has_value()) {
+  if (const auto opt = unop_from_token_kind(current_token_kind()); opt.has_value()) {
     const auto unary_operator = opt.value();
     advance();
     auto operand = parse_expr();

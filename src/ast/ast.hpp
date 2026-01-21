@@ -110,7 +110,7 @@ namespace ast
   };
 }  // namespace ast
 
-constexpr std::optional<ast::unary::op> try_unop_from_token_kind(const token::token_kind k) {
+constexpr std::optional<ast::unary::op> unop_from_token_kind(const token::token_kind k) {
   using tk = token::token_kind;
   using unop = ast::unary::op;
   static std::vector<std::tuple<tk, unop>> unary_operators = {
@@ -123,7 +123,7 @@ constexpr std::optional<ast::unary::op> try_unop_from_token_kind(const token::to
   return std::nullopt;
 }
 
-constexpr std::optional<ast::binary::op> try_binop_from_token_kind(const token::token_kind k) {
+constexpr std::optional<ast::binary::op> binop_from_token_kind(const token::token_kind k) {
   using tk = token::token_kind;
   using binop = ast::binary::op;
   static std::vector<std::tuple<tk, binop>> binary_operators = {

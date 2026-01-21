@@ -1,7 +1,6 @@
 #ifndef C_COMPILER_TOKEN_HPP
 #define C_COMPILER_TOKEN_HPP
 
-#include <vector>
 #include <format>
 #include <string>
 
