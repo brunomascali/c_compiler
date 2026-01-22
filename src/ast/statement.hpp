@@ -1,0 +1,28 @@
+#ifndef C_COMPILER_STATEMENT_HPP
+#define C_COMPILER_STATEMENT_HPP
+
+#include <ast/ast_fwd.hpp>
+#include <vector>
+
+namespace ast {
+  struct return_stmt {
+    expr value;
+  };
+
+  struct declaration {
+    std::string identifier;
+    std::optional<expr> init;
+  };
+
+  struct if_stmt {
+    expr condition;
+    statement then_branch;
+    std::optional<statement> else_branch;
+  };
+
+  struct block {
+    std::vector<statement> items;
+  };
+}
+
+#endif  // C_COMPILER_STATEMENT_HPP

@@ -1,5 +1,7 @@
 #include "parser.hpp"
 
+#include "ir/ir_generator.hpp"
+
 ast::program parser::parse() { return parse_program(); }
 
 ast::program parser::parse_program() {
@@ -9,7 +11,7 @@ ast::program parser::parse_program() {
 }
 
 ast::function parser::parse_function() {
-  std::vector<ast::block_item> block_items;
+  ast::block block;
   expect_or_fail(token::token_kind::int_kw);
   advance();
 
@@ -28,23 +30,23 @@ ast::function parser::parse_function() {
   advance();
 
   while (current_token().kind() != token::token_kind::brace_close) {
-    block_items.emplace_back(parse_block_item());
+    block.items.emplace_back(parse_statement());
   }
   advance();
 
-  return ast::function{identifier, std::move(block_items)};
+  return ast::function{identifier, std::move(block)};
 }
 
-ast::block_item parser::parse_block_item() {
+ast::statement parser::parse_statement() {
   using tk = token::token_kind;
   if (current_token_kind() == tk::int_kw) {
     return parse_declaration();
   }
 
-  return parse_statement();
+  return parse_return();
 }
 
-ast::statement parser::parse_statement() {
+ast::statement parser::parse_return() {
   using tk = token::token_kind;
   expect_or_fail(tk::return_kw);
   advance();
@@ -52,10 +54,10 @@ ast::statement parser::parse_statement() {
   expect_or_fail(tk::semicolon);
   advance();
 
-  return ast::return_stmt(std::move(expr));
+  return std::make_unique<ast::return_stmt>(std::move(expr));
 }
 
-ast::declaration parser::parse_declaration() {
+ast::statement parser::parse_declaration() {
   using tk = token::token_kind;
 
   expect_or_fail(tk::int_kw);
@@ -75,7 +77,7 @@ ast::declaration parser::parse_declaration() {
   expect_or_fail(tk::semicolon);
   advance();
 
-  return ast::declaration(identifier, std::move(e));
+  return std::make_unique<ast::declaration>(identifier, std::move(e));
 }
 
 ast::expr parser::parse_expr(int min_prec) {

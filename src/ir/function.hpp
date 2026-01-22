@@ -2,11 +2,14 @@
 #define C_COMPILER_FUNCTION_HPP
 
 namespace ir {
-struct start_function {
-  explicit start_function(const ast::function &func) : name(func.name) {}
+  struct instruction;
 
-  std::string name;
-};
+  struct function {
+    std::string name;
+    std::vector<instruction> instructions;
+
+    size_t temp_count;
+  };
 } // namespace ir
 
 #endif // C_COMPILER_FUNCTION_HPP

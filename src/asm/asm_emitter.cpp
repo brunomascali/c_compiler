@@ -21,7 +21,7 @@ namespace x86
         [&](const ir::unary &i) { return handle_unary(i); },
         [&](const ir::binary &i) { return handle_binary(i); },
         [&](const ir::return_ &i) { return handle_return(i); },
-        [&](const ir::start_function &i) { return handle_start_function(i); },
+        [&](const ir::function &i) { return handle_start_function(i); },
 
         [&](const ir::copy &i) { return handle_copy(i); },
         [&](const ir::jump &i) { return handle_jump(i); },
@@ -84,7 +84,7 @@ namespace x86
     };
   }
 
-  std::vector<instruction_t> asm_emitter::handle_start_function(const ir::start_function &instruction) {
+  std::vector<instruction_t> asm_emitter::handle_start_function(const ir::function &instruction) {
     return {start_function(instruction.name)};
   }
 
@@ -163,11 +163,11 @@ namespace x86
     return std::visit(overloaded{[&](const ir::immediate &imm) { return operand(imm); },
                                  [&](const ir::identifier &id)
                                  {
-                                   const auto offset = operand::stack{.offset = (m_ctx.get_or_create_stack_offset(id))};
+                                   const auto offset = operand::stack{.offset = (m_ctx.create_stack_offset(id))};
                                    return operand(offset);
                                  },
                                  [&](const ir::label &l) { return l; }},
-                      value.inner);
+                      value);
   }
 
   std::string to_string(instruction_t instruction) {

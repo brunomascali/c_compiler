@@ -1,121 +1,124 @@
 #include "ir_generator.hpp"
 
+#include <ir/program.hpp>
+#include <memory>
+
+#include "ast/ast.hpp"
+#include "binary.hpp"
+#include "copy.hpp"
+#include "unary.hpp"
+
+
+template <class... Ts>
+struct overload : Ts...
+{
+  using Ts::operator()...;
+};
+template <class... Ts>
+overload(Ts...) -> overload<Ts...>;
+
 namespace ir
 {
-  ir_generator::ir_generator(const ast::program &root) {
-    for (const auto &function_definition : root.functions) {
-      from_function_node(function_definition);
+  program generator::generate(const ast::program& root) {
+    program prog;
+    for (const auto& func : root.functions) {
+      generator generator;
+      generator.emit_func(func);
+
+      prog.functions.emplace_back(func.name, generator.m_instructions);
+    }
+
+    return prog;
+  }
+
+  value generator::emit_expression(const ast::expr& expr) {
+    return std::visit(overload{[&](int val) -> value { return value{val}; },
+
+                               [&](const Box<ast::variable>& v) -> value { return value{v->identifier}; },
+
+                               [&](const Box<ast::unary>& u) -> value
+                               {
+                                 const value src = emit_expression(u->child);
+                                 std::string dst = new_variable();  // Generate a temporary name like "t1"
+
+                                 m_instructions.emplace_back(ir::unary{u->operation, src, dst});
+                                 return value{dst};
+                               },
+
+                               [&](const Box<ast::binary>& b) -> value
+                               {
+                                 const value lhs = emit_expression(b->left);
+                                 const value rhs = emit_expression(b->right);
+                                 std::string dst = new_variable();
+
+                                 m_instructions.emplace_back(ir::binary{b->operation, lhs, rhs, dst});
+                                 return value{dst};
+                               },
+
+                               [&](const Box<ast::assignment>& a) -> ir::value
+                               {
+                                 const value rhs = emit_expression(a->rhs);
+                                 const value lhs = emit_expression(a->lhs);
+
+                                 m_instructions.emplace_back(ir::copy{rhs, lhs.as_id()});
+                                 return rhs;
+                               }},
+                      expr);
+  }
+  void generator::emit_func(const ast::function& func) {
+    for (const auto& stmt : func.body.items) {
+      emit_statement(stmt);
     }
   }
 
-  std::vector<instruction> ir_generator::instructions() { return m_instructions; }
+  void generator::emit_statement(const ast::statement& stmt) {
+    std::visit(overload{[&](const Box<ast::return_stmt>& s)
+                        {
+                          const value val = emit_expression(s->value);
+                          m_instructions.emplace_back(ir::return_{val});
+                        },
 
-  void ir_generator::from_function_node(const ast::function &func) {
-    m_instructions.emplace_back(start_function(func));
-    for (const auto &item : func.body) {
-      from_block_item_node(item);
-    }
+                        [&](const Box<ast::declaration>& d)
+                        {
+                          if (d->init) {
+                            const value initial_val = emit_expression(d->init.value());
+                            m_instructions.emplace_back(ir::copy{initial_val, d->identifier});
+                          }
+                        },
+
+                        [&](const Box<ast::if_stmt>& s)
+                        {
+                          const std::string else_label = new_label();
+                          const std::string end_label = new_label();
+
+                          const value cond = emit_expression(s->condition);
+
+                          m_instructions.emplace_back(ir::jump_if_zero{cond, else_label});
+
+                          emit_statement(s->then_branch);
+                          m_instructions.emplace_back(ir::jump{end_label});
+
+                          m_instructions.emplace_back(ir::label{else_label});
+                          if (s->else_branch) {
+                            emit_statement(s->else_branch.value());
+                          }
+
+                          m_instructions.emplace_back(ir::label{end_label});
+                        },
+
+                        [&](const Box<ast::block>& b)
+                        {
+                          for (const auto& item : b->items) {
+                            emit_statement(item);
+                          }
+                        },
+
+                        [&](const ast::expr& e) { emit_expression(e); },
+
+                        [&](const std::monostate&) {}},
+               stmt);
   }
 
-  void ir_generator::from_block_item_node(const ast::block_item &item) {
-    std::visit(
-      [&](auto &&arg)
-      {
-        using T = std::decay_t<decltype(arg)>;
-
-        if constexpr (std::is_same_v<T, ast::statement>) {
-          from_statement_node(arg);
-        }
-        else if constexpr (std::is_same_v<T, ast::declaration>) {
-          auto src = operand_from_expr_node(arg.expression.value());
-          auto dst = value(arg.identifier);
-          m_instructions.emplace_back(copy(src, dst));
-        }
-      },
-      item);
-  }
-
-  value ir_generator::operand_from_expr_node(const ast::expr &expr) {
-    return std::visit(
-      [&](auto &&arg)
-      {
-        using T = std::decay_t<decltype(arg)>;
-
-        if constexpr (std::is_same_v<T, int>) {
-          return value(arg);
-        }
-        else if constexpr (std::is_same_v<T, std::unique_ptr<ast::unary>>) {
-          auto src = operand_from_expr_node(arg->expression);
-          auto dst = value(new_variable());
-          m_instructions.emplace_back(unary{arg->operation, src, dst});
-          return dst;
-        }
-        else if constexpr (std::is_same_v<T, std::unique_ptr<ast::binary>>) {
-          if (arg->operation == ast::binary::op::and_) {
-            auto false_label = new_variable();
-            auto result = value(new_variable());
-            auto end_label = new_variable();
-            auto lhs = operand_from_expr_node(arg->left);
-            m_instructions.emplace_back(jump_if_zero(false_label, lhs));
-            auto rhs = operand_from_expr_node(arg->right);
-            m_instructions.emplace_back(jump_if_zero(false_label, rhs));
-            m_instructions.emplace_back(copy(value(1), result));
-            m_instructions.emplace_back(jump(end_label));
-            m_instructions.emplace_back(label(false_label));
-            m_instructions.emplace_back(copy(value(0), result));
-            m_instructions.emplace_back(label(end_label));
-            return result;
-          }
-          if (arg->operation == ast::binary::op::or_) {
-            auto true_label = new_variable();
-            auto result = value(new_variable());
-            auto end_label = new_variable();
-            auto lhs = operand_from_expr_node(arg->left);
-            m_instructions.emplace_back(jump_if_not_zero(true_label, lhs));
-            auto rhs = operand_from_expr_node(arg->right);
-            m_instructions.emplace_back(jump_if_not_zero(true_label, rhs));
-            m_instructions.emplace_back(copy(value(0), result));
-            m_instructions.emplace_back(jump(end_label));
-            m_instructions.emplace_back(label(true_label));
-            m_instructions.emplace_back(copy(value(1), result));
-            m_instructions.emplace_back(label(end_label));
-            return result;
-          }
-          auto lhs = operand_from_expr_node(arg->left);
-          auto rhs = operand_from_expr_node(arg->right);
-          auto dst = value(new_variable());
-          m_instructions.emplace_back(binary(arg->operation, lhs, rhs, dst));
-          return dst;
-        }
-        else if constexpr (std::is_same_v<T, std::unique_ptr<ast::variable>>) {
-          return value(arg->identifier);
-        }
-        else if constexpr (std::is_same_v<T, std::unique_ptr<ast::assignment>>) {
-          auto lhs = operand_from_expr_node(arg->lhs);
-          auto rhs = operand_from_expr_node(arg->rhs);
-          m_instructions.emplace_back(copy(rhs, lhs));
-          return lhs;
-        }
-      },
-      expr);
-  }
-
-  void ir_generator::from_statement_node(const ast::statement &stmt) {
-    std::visit(
-      [&](auto &&arg)
-      {
-        using T = std::decay_t<decltype(arg)>;
-
-        if constexpr (std::is_same_v<T, ast::return_stmt>) {
-          auto src = operand_from_expr_node(std::move(arg.expression));
-          m_instructions.emplace_back(return_(std::move(src)));
-        }
-      },
-      stmt);
-  }
-
-  std::string ir_generator::new_variable() {
-    constexpr auto TEMP_VAR = "TMP";
-    return std::format("{}_{}", TEMP_VAR, tmp_variable_suffix++);
-  }
+  std::string generator::new_variable() { return "t." + std::to_string(tmp_variable_suffix++); }
+  std::string generator::new_label() { return "L." + std::to_string(tmp_label_suffix++); }
 }  // namespace ir

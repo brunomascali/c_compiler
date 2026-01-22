@@ -1,48 +1,34 @@
 #ifndef C_COMPILER_IR_HPP
 #define C_COMPILER_IR_HPP
 
-#include <string>
-#include <variant>
+#include <ast/ast.hpp>
+#include <ast/ast_fwd.hpp>
+#include <ir/defs.hpp>
+#include <ir/program.hpp>
+#include <memory>
 #include <vector>
 
-#include <ast/ast.hpp>
-#include <ir/binary.hpp>
-#include <ir/copy.hpp>
-#include <ir/function.hpp>
-#include <ir/jump.hpp>
-#include <ir/jump_if_not_zero.hpp>
-#include <ir/jump_if_zero.hpp>
-#include <ir/label.hpp>
-#include <ir/return.hpp>
-#include <ir/unary.hpp>
+namespace ir
+{
+  template <typename T>
+  using Box = std::unique_ptr<T>;
 
-namespace ir {
+  class generator {
+   public:
+    static program generate(const ast::program &root);
 
-using instruction = std::variant<unary, binary, return_, start_function, copy,
-                                 jump, jump_if_not_zero, jump_if_zero, label>;
+   private:
+    value emit_expression(const ast::expr &expr);
+    void emit_func(const ast::function &func);
+    void emit_statement(const ast::statement &stmt);
 
-class ir_generator {
-public:
-  ir_generator() = delete;
+    std::string new_variable();
+    std::string new_label();
 
-  explicit ir_generator(const ast::program &root);
+    std::vector<instruction> m_instructions{};
+    int tmp_variable_suffix{0};
+    int tmp_label_suffix{0};
+  };  // namespace ir
+}  // namespace ir
 
-  std::vector<instruction> instructions();
-
-private:
-  void from_function_node(const ast::function &func);
-
-  void from_block_item_node(const ast::block_item &stmt);
-
-  void from_statement_node(const ast::statement &stmt);
-
-  value operand_from_expr_node(const ast::expr &expr);
-
-  std::string new_variable();
-
-  std::vector<instruction> m_instructions{};
-  std::size_t tmp_variable_suffix{0};
-};
-} // namespace ir
-
-#endif // C_COMPILER_IR_HPP
+#endif  // C_COMPILER_IR_HPP

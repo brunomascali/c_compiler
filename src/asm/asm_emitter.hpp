@@ -4,7 +4,6 @@
 #include <asm/codegen_context.hpp>
 #include <asm/instruction.hpp>
 #include <vector>
-#include <initializer_list>
 
 namespace x86
 {
@@ -23,7 +22,7 @@ namespace x86
 
     std::vector<instruction_t> handle_return(const ir::return_ &instruction);
 
-    std::vector<instruction_t> handle_start_function(const ir::start_function &instruction);
+    std::vector<instruction_t> handle_start_function(const ir::function &instruction);
 
     std::vector<instruction_t> handle_copy(const ir::copy &instruction);
 

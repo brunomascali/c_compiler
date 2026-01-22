@@ -2,7 +2,7 @@
 #define C_COMPILER_BINARY_HPP
 
 #include <ast/ast.hpp>
-#include <ir/defs.hpp>
+#include <ir/value.hpp>
 
 namespace ir {
 struct binary {

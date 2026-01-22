@@ -6,7 +6,7 @@
 
 namespace ir {
 struct jump_if_zero {
-  explicit jump_if_zero(identifier target, value condition)
+  explicit jump_if_zero(value condition, identifier target)
       : target(std::move(target)), condition(std::move(condition)) {}
 
   identifier target;

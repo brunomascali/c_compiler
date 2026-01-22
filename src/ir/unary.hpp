@@ -1,7 +1,8 @@
 #ifndef C_COMPILER_UNARY_HPP
 #define C_COMPILER_UNARY_HPP
 
-#include <ir/defs.hpp>
+#include <ast/expr.hpp>
+#include <ir/value.hpp>
 
 namespace ir {
 struct unary {

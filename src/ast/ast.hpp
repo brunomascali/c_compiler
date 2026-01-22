@@ -1,113 +1,31 @@
 #ifndef C_COMPILER_AST_HPP
 #define C_COMPILER_AST_HPP
 
+#include <ast/expr.hpp>
+#include <ast/statement.hpp>
 #include <lexer/token.hpp>
-#include <memory>
 #include <optional>
 #include <string>
-#include <variant>
 #include <vector>
 
 #include "ast.hpp"
 
-namespace x86
-{
-  struct instruction;
-}
-
 namespace ast
 {
-  struct unary;
-  struct binary;
-  struct variable;
-  struct assignment;
-
-  using expr = std::variant<int, std::unique_ptr<unary>, std::unique_ptr<binary>, std::unique_ptr<variable>,
-                            std::unique_ptr<assignment>>;
-
-  struct unary
-  {
-    enum class op
-    {
-      not_,
-      negate
-    };
-
-    op operation;
-    expr expression;
-
-    unary(const op o, expr e) : operation(o), expression(std::move(e)) {}
-  };
-
-  struct binary
-  {
-    enum class op
-    {
-      add,
-      sub,
-      mul,
-      div,
-      rem,
-      and_,
-      or_,
-      eq,
-      neq,
-      lt,
-      gt,
-      le,
-      ge,
-      assign
-    };
-
-    op operation;
-    expr left;
-    expr right;
-
-    binary(const op o, expr l, expr r) : operation(o), left(std::move(l)), right(std::move(r)) {}
-  };
-
-  struct variable
-  {
-    explicit variable(std::string n) : identifier(std::move(n)) {}
-    std::string identifier;
-  };
-
-  struct assignment
-  {
-    assignment(expr a, expr b) : lhs(std::move(a)), rhs(std::move(b)) {}
-    expr lhs;
-    expr rhs;
-  };
-
-  struct return_stmt
-  {
-    expr expression;
-  };
-
-  struct declaration
-  {
-    declaration(std::string id, std::optional<expr> e) : identifier(std::move(id)), expression(std::move(e)) {}
-    std::string identifier;
-    std::optional<expr> expression;
-  };
-
-  using statement = std::variant<return_stmt, expr, std::monostate>;
-  using block_item = std::variant<statement, declaration>;
-
-  struct function
-  {
-    std::string name;
-    std::vector<block_item> body;
-
-    function(std::string n, std::vector<block_item> b) : name(std::move(n)), body(std::move(b)) {}
-  };
+  struct function;
 
   struct program
   {
     std::vector<function> functions;
-
-    explicit program(std::vector<function> f) : functions(std::move(f)) {}
   };
+
+  struct function
+  {
+    std::string name;
+    block body;
+  };
+
+
 }  // namespace ast
 
 constexpr std::optional<ast::unary::op> unop_from_token_kind(const token::token_kind k) {
