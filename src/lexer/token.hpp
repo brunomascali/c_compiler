@@ -5,37 +5,51 @@
 #include <string>
 
 class token {
-public:
-  enum class token_kind {
+ public:
+  enum class token_kind
+  {
     // Keywords
-    int_kw, void_kw, return_kw,
+    int_kw,
+    void_kw,
+    return_kw,
+    if_kw,
+    else_kw,
     // non-fixed tokens
-    identifier, number,
+    identifier,
+    number,
     // punctuation
-    paren_open, paren_close,
-    brace_open, brace_close,
+    paren_open,
+    paren_close,
+    brace_open,
+    brace_close,
     semicolon,
-    equal, hyphen, tilde,
-    plus, asterisk, slash, percent,
+    equal,
+    hyphen,
+    tilde,
+    plus,
+    asterisk,
+    slash,
+    percent,
 
     // operators
-    negation, double_ampersand, double_pipe,
-    double_eq, neq, lt, gt,
-    le, ge,
+    negation,
+    double_ampersand,
+    double_pipe,
+    double_eq,
+    neq,
+    lt,
+    gt,
+    le,
+    ge,
   };
 
-  explicit token(const token_kind k, std::string lexeme = "") : m_kind(k), m_lexeme(std::move(lexeme)) {
-  }
+  explicit token(const token_kind k, std::string lexeme = "") : m_kind(k), m_lexeme(std::move(lexeme)) {}
 
-  [[nodiscard]] token_kind kind() const {
-    return m_kind;
-  }
+  [[nodiscard]] token_kind kind() const { return m_kind; }
 
-  [[nodiscard]] std::string lexeme() const {
-    return m_lexeme;
-  }
+  [[nodiscard]] std::string lexeme() const { return m_lexeme; }
 
-private:
+ private:
   token_kind m_kind;
   std::string m_lexeme;
 };
@@ -45,92 +59,134 @@ inline std::optional<int> precedence(const token::token_kind kind) {
   switch (kind) {
     case tk::asterisk:
     case tk::slash:
-    case tk::percent: return 50;
+    case tk::percent:
+      return 50;
     case tk::plus:
-    case tk::hyphen: return 45;
+    case tk::hyphen:
+      return 45;
     case tk::lt:
     case tk::gt:
     case tk::le:
-    case tk::ge: return 35;
+    case tk::ge:
+      return 35;
     case tk::neq:
-    case tk::double_eq: return 30;
-    case tk::double_ampersand: return 10;
-    case tk::double_pipe: return 5;
-    case tk::equal: return 1;
-    default: return std::nullopt;
+    case tk::double_eq:
+      return 30;
+    case tk::double_ampersand:
+      return 10;
+    case tk::double_pipe:
+      return 5;
+    case tk::equal:
+      return 1;
+    default:
+      return std::nullopt;
   }
 }
 
-template<>
-struct std::formatter<token::token_kind> {
-  constexpr auto parse(std::format_parse_context &ctx) {
-    return ctx.begin();
-  }
+template <>
+struct std::formatter<token::token_kind>
+{
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
   auto format(token::token_kind k, std::format_context &ctx) const {
     std::string_view name = "unknown";
     switch (k) {
-      case token::token_kind::int_kw: name = "int";
+      case token::token_kind::int_kw:
+        name = "int";
         break;
-      case token::token_kind::void_kw: name = "void";
+      case token::token_kind::void_kw:
+        name = "void";
         break;
-      case token::token_kind::return_kw: name = "return";
+      case token::token_kind::return_kw:
+        name = "return";
         break;
-      case token::token_kind::identifier: name = "identifier";
+      case token::token_kind::identifier:
+        name = "identifier";
         break;
-      case token::token_kind::number: name = "number";
+      case token::token_kind::number:
+        name = "number";
         break;
-      case token::token_kind::paren_open: name = "(";
+      case token::token_kind::paren_open:
+        name = "(";
         break;
-      case token::token_kind::paren_close: name = ")";
+      case token::token_kind::paren_close:
+        name = ")";
         break;
-      case token::token_kind::brace_open: name = "{";
+      case token::token_kind::brace_open:
+        name = "{";
         break;
-      case token::token_kind::brace_close: name = "}";
+      case token::token_kind::brace_close:
+        name = "}";
         break;
-      case token::token_kind::semicolon: name = ";";
+      case token::token_kind::semicolon:
+        name = ";";
         break;
-      case token::token_kind::hyphen: name = "-";
+      case token::token_kind::hyphen:
+        name = "-";
         break;
-      case token::token_kind::tilde: name = "~";
+      case token::token_kind::tilde:
+        name = "~";
         break;
-      case token::token_kind::plus: name = "+";
+      case token::token_kind::plus:
+        name = "+";
         break;
-      case token::token_kind::asterisk: name = "*";
+      case token::token_kind::asterisk:
+        name = "*";
         break;
-      case token::token_kind::slash: name = "/";
+      case token::token_kind::slash:
+        name = "/";
         break;
-      case token::token_kind::percent: name = "%";
+      case token::token_kind::percent:
+        name = "%";
         break;
-      case token::token_kind::negation: name = "!";
+      case token::token_kind::negation:
+        name = "!";
         break;
-      case token::token_kind::double_ampersand: name = "&&";
+      case token::token_kind::double_ampersand:
+        name = "&&";
         break;
-      case token::token_kind::double_pipe: name = "||";
+      case token::token_kind::double_pipe:
+        name = "||";
         break;
-      case token::token_kind::double_eq: name = "==";
+      case token::token_kind::double_eq:
+        name = "==";
         break;
-      case token::token_kind::neq: name = "!=";
+      case token::token_kind::neq:
+        name = "!=";
         break;
-      case token::token_kind::lt: name = "<";
+      case token::token_kind::lt:
+        name = "<";
         break;
-      case token::token_kind::gt: name = ">";
+      case token::token_kind::gt:
+        name = ">";
         break;
-      case token::token_kind::le: name = "<=";
+      case token::token_kind::le:
+        name = "<=";
         break;
-      case token::token_kind::ge: name = ">=";
+      case token::token_kind::ge:
+        name = ">=";
+        break;
+      case token::token_kind::if_kw:
+        name = "if";
+        break;
+      case token::token_kind::else_kw:
+        name = "else";
+        break;
+      case token::token_kind::equal:
+        name = "==";
         break;
     }
     return std::format_to(ctx.out(), "{}", name);
   }
 };
 
-template<>
-struct std::formatter<token> {
+template <>
+struct std::formatter<token>
+{
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
   auto format(const token &t, std::format_context &ctx) const {
     return std::format_to(ctx.out(), "Token({}, lexeme: \"{}\")", t.kind(), t.lexeme());
   }
 };
-#endif //C_COMPILER_TOKEN_HPP
+#endif  // C_COMPILER_TOKEN_HPP

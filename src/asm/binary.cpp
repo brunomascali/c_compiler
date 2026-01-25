@@ -12,14 +12,14 @@ namespace x86
     if (std::holds_alternative<operand::stack>(arg1.value) &&
         std::holds_alternative<operand::stack>(arg2.value)) {
       instructions.emplace_back(mov(arg1, operand(R10D)));
-      instructions.emplace_back(cmp(operand(R10D), arg2));
+      instructions.emplace_back(cmp(operand(R10D), arg2, bit_width::byte));
       return instructions;
         }
 
     // Second operand is a constant
     if (std::holds_alternative<operand::immediate>(arg2.value)) {
       instructions.emplace_back(mov(arg1, operand(R11D)));
-      instructions.emplace_back(cmp(arg2, operand(R11D)));
+      instructions.emplace_back(cmp(arg2, operand(R11D), bit_width::byte));
       return instructions;
     }
 

@@ -22,12 +22,14 @@ namespace x86
         [&](const ir::binary &i) { return handle_binary(i); },
         [&](const ir::return_ &i) { return handle_return(i); },
         [&](const ir::function &i) { return handle_start_function(i); },
-
         [&](const ir::copy &i) { return handle_copy(i); },
         [&](const ir::jump &i) { return handle_jump(i); },
         [&](const ir::jump_if_zero &i) { return handle_jump_if_zero(i); },
         [&](const ir::jump_if_not_zero &i) { return handle_jump_if_not_zero(i); },
         [&](const ir::label &i) { return handle_label(i); },
+        [&](const ir::symbol &i) { return handle_symbol(i); },
+        [&](const ir::begin_scope &i) { return handle_scope(i); },
+        [&](const ir::end_scope &i) { return handle_scope(i); },
       },
       instr);
 
@@ -67,7 +69,7 @@ namespace x86
       case ast::binary::op::gt:
       case ast::binary::op::ge:
         return {
-          cmp(src1, src2),
+          cmp(src2, src1, bit_width::dword),
           set(instruction.op, operand(AL)),
           mov(operand(AL), dst, bit_width::byte),
         };
@@ -101,15 +103,32 @@ namespace x86
   }
 
   std::vector<instruction_t> asm_emitter::handle_jump_if_zero(const ir::jump_if_zero &instruction) {
-    return {cmp(0, resolve_operand(instruction.condition)), jmp(jmp::condition::E, instruction.target)};
+    return {cmp(0, resolve_operand(instruction.condition), bit_width::byte),
+            jmp(jmp::condition::E, instruction.target)};
   }
 
   std::vector<instruction_t> asm_emitter::handle_jump_if_not_zero(const ir::jump_if_not_zero &instruction) {
-    throw std::logic_error("not implemented");
+    return {cmp(0, resolve_operand(instruction.condition), bit_width::byte),
+            jmp(jmp::condition::NE, instruction.target)};
   }
 
   std::vector<instruction_t> asm_emitter::handle_label(const ir::label &instruction) {
     return {label(instruction.name)};
+  }
+
+  std::vector<instruction_t> asm_emitter::handle_symbol(const ir::symbol &instruction) {
+    m_stack_frame.register_symbol(instruction.name);
+    return {};
+  }
+
+  std::vector<instruction_t> asm_emitter::handle_scope(const ir::begin_scope &instruction) {
+    m_stack_frame.push_scope();
+    return {};
+  }
+
+  std::vector<instruction_t> asm_emitter::handle_scope(const ir::end_scope &instruction) {
+    m_stack_frame.pop_scope();
+    return {};
   }
 
   std::vector<instruction_t> asm_emitter::resolve_instructions(const std::vector<instruction_t> &instructions) {
@@ -135,38 +154,14 @@ namespace x86
     }
   }
 
-  std::vector<instruction_t> asm_emitter::resolve_cmp_operands(const cmp &instruction) {
-    const auto &[a, b] = instruction;
-    // Both operands are memory addresses
-    if (std::holds_alternative<operand::stack>(a.value) and std::holds_alternative<operand::stack>(b.value)) {
-      return {{mov(a, operand(R10D))}, cmp(operand(R10D), b)};
-    }
-    // Second operand is a constant
-    if (std::holds_alternative<operand::immediate>(b.value)) {
-      return {
-        {mov(a, operand(R11D)), cmp(b, operand(R11D))},
-      };
-    }
-
-    return {instruction};
-  }
-
-  std::vector<instruction_t> asm_emitter::resolve_imul_operands(const binary &instruction) {
-    if (const auto &[op, src, dst] = instruction; std::holds_alternative<operand::stack>(dst.value)) {
-      return {mov(dst, operand(R11D)), binary(op, src, operand(R11D)), mov(operand(R11D), dst)};
-    }
-
-    return {};
-  }
-
-  operand asm_emitter::resolve_operand(const ir::value &value) const {
+  operand asm_emitter::resolve_operand(const ir::value &value) {
     return std::visit(overloaded{[&](const ir::immediate &imm) { return operand(imm); },
                                  [&](const ir::identifier &id)
                                  {
-                                   const auto offset = operand::stack{.offset = (m_ctx.create_stack_offset(id))};
-                                   return operand(offset);
+                                   const auto offset = m_stack_frame.resolve_variable_offset(id);
+                                   return operand(operand::stack{.offset = offset});
                                  },
-                                 [&](const ir::label &l) { return l; }},
+                                 [&](const ir::label &l) { return operand(operand::label{.name = l.name}); }},
                       value);
   }
 

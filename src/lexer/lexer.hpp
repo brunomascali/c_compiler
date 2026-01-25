@@ -19,6 +19,8 @@ class lexer {
   explicit lexer(std::string source) : m_source(std::move(source)), m_index(0) {
     const std::vector<std::pair<token::token_kind, std::string>> rules = {
       {token::token_kind::int_kw, "int\\b"},
+      {token::token_kind::int_kw, "int\\b"},
+      {token::token_kind::if_kw, "if\\b"},
       {token::token_kind::void_kw, "void\\b"},
       {token::token_kind::return_kw, "return\\b"},
       {token::token_kind::identifier, "[a-zA-Z_][a-zA-Z0-9_]*"},
@@ -29,10 +31,10 @@ class lexer {
       {token::token_kind::brace_close, "\\}"},
       {token::token_kind::semicolon, ";"},
       {token::token_kind::neq, "!="},
-      {token::token_kind::lt, "<"},
-      {token::token_kind::gt, ">"},
       {token::token_kind::le, "<="},
       {token::token_kind::ge, ">="},
+      {token::token_kind::lt, "<"},
+      {token::token_kind::gt, ">"},
       {token::token_kind::hyphen, "-"},
       {token::token_kind::plus, "\\+"},
       {token::token_kind::asterisk, "\\*"},

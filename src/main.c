@@ -1,3 +1,10 @@
 int main(void) {
-  return 2 + 3 * 4;
+  int a = 10;
+  {
+    int a = 20;
+    {
+      int a = 30;
+    }
+  }
+  return a;
 }

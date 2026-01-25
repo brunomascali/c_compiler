@@ -6,11 +6,11 @@
 
 namespace ir {
 struct jump_if_not_zero {
-  explicit jump_if_not_zero(identifier target, value condition)
-      : target(std::move(target)), condition(std::move(condition)) {}
+  explicit jump_if_not_zero(value condition, identifier target)
+      : condition(std::move(condition)), target(std::move(target)) {}
 
-  identifier target;
   value condition;
+  identifier target;
 };
 } // namespace ir
 

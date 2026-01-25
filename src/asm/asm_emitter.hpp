@@ -1,20 +1,18 @@
 #ifndef C_COMPILER_ASM_EMITTER_HPP
 #define C_COMPILER_ASM_EMITTER_HPP
 
-#include <asm/codegen_context.hpp>
 #include <asm/instruction.hpp>
+#include <asm/stack_frame.hpp>
 #include <vector>
 
 namespace x86
 {
   class asm_emitter {
    public:
-    explicit asm_emitter(codegen_context &ctx) : m_ctx(ctx) {}
-
     std::vector<instruction_t> emit(const ir::instruction &instr);
 
    private:
-    codegen_context &m_ctx;
+    stack_frame m_stack_frame;
 
     std::vector<instruction_t> handle_unary(const ir::unary &instruction);
 
@@ -34,13 +32,14 @@ namespace x86
 
     std::vector<instruction_t> handle_label(const ir::label &instruction);
 
+    std::vector<instruction_t> handle_symbol(const ir::symbol &instruction);
+
+    std::vector<instruction_t> handle_scope(const ir::begin_scope &instruction);
+    std::vector<instruction_t> handle_scope(const ir::end_scope &instruction);
+
     std::vector<instruction_t> resolve_instructions(const std::vector<instruction_t>& instructions);
 
-    std::vector<instruction_t> resolve_imul_operands(const binary &instruction);
-
-    std::vector<instruction_t> resolve_cmp_operands(const cmp &instruction);
-
-    [[nodiscard]] operand resolve_operand(const ir::value &value) const;
+    [[nodiscard]] operand resolve_operand(const ir::value &value);
   };
 
   std::string to_string(instruction_t instruction);

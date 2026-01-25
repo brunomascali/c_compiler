@@ -4,10 +4,11 @@
 #include <memory>
 
 #include "ast/ast.hpp"
+#include "ast/ast_printer.hpp"
 #include "binary.hpp"
 #include "copy.hpp"
+#include "symbol.hpp"
 #include "unary.hpp"
-
 
 template <class... Ts>
 struct overload : Ts...
@@ -39,7 +40,7 @@ namespace ir
                                [&](const Box<ast::unary>& u) -> value
                                {
                                  const value src = emit_expression(u->child);
-                                 std::string dst = new_variable();  // Generate a temporary name like "t1"
+                                 std::string dst = new_variable();
 
                                  m_instructions.emplace_back(ir::unary{u->operation, src, dst});
                                  return value{dst};
@@ -65,58 +66,65 @@ namespace ir
                                }},
                       expr);
   }
+
   void generator::emit_func(const ast::function& func) {
-    for (const auto& stmt : func.body.items) {
-      emit_statement(stmt);
+    m_instructions.emplace_back(function(func.name));
+    emit_block(func.body);
+  }
+
+  void generator::emit_block(const ast::block& block) {
+    m_instructions.emplace_back(begin_scope{});
+    for (const auto& item : block.items) {
+      emit_block_item(item);
     }
+    m_instructions.emplace_back(end_scope{});
   }
 
   void generator::emit_statement(const ast::statement& stmt) {
-    std::visit(overload{[&](const Box<ast::return_stmt>& s)
-                        {
-                          const value val = emit_expression(s->value);
-                          m_instructions.emplace_back(ir::return_{val});
-                        },
+    std::visit(overloaded{[&](const Box<ast::return_stmt>& s)
+                          {
+                            const value val = emit_expression(s->value);
+                            m_instructions.emplace_back(ir::return_{val});
+                          },
 
-                        [&](const Box<ast::declaration>& d)
-                        {
-                          if (d->init) {
-                            const value initial_val = emit_expression(d->init.value());
-                            m_instructions.emplace_back(ir::copy{initial_val, d->identifier});
-                          }
-                        },
+                          [&](const Box<ast::if_stmt>& s)
+                          {
+                            const std::string end_label = new_label();
 
-                        [&](const Box<ast::if_stmt>& s)
-                        {
-                          const std::string else_label = new_label();
-                          const std::string end_label = new_label();
+                            const value cond = emit_expression(s->condition);
+                            m_instructions.emplace_back(ir::jump_if_zero{cond, end_label});
 
-                          const value cond = emit_expression(s->condition);
+                            emit_statement(s->then_branch);
+                            m_instructions.emplace_back(ir::label{end_label});
+                          },
 
-                          m_instructions.emplace_back(ir::jump_if_zero{cond, else_label});
+                          [&](const Box<ast::block>& b)
+                          {
+                            m_instructions.emplace_back(begin_scope{});
+                            for (const auto& item : b->items) {
+                              emit_block_item(item);
+                            }
+                            m_instructions.emplace_back(end_scope{});
+                          },
 
-                          emit_statement(s->then_branch);
-                          m_instructions.emplace_back(ir::jump{end_label});
+                          [&](const ast::expr& e) { emit_expression(e); },
 
-                          m_instructions.emplace_back(ir::label{else_label});
-                          if (s->else_branch) {
-                            emit_statement(s->else_branch.value());
-                          }
-
-                          m_instructions.emplace_back(ir::label{end_label});
-                        },
-
-                        [&](const Box<ast::block>& b)
-                        {
-                          for (const auto& item : b->items) {
-                            emit_statement(item);
-                          }
-                        },
-
-                        [&](const ast::expr& e) { emit_expression(e); },
-
-                        [&](const std::monostate&) {}},
+                          [&](const std::monostate&) {}},
                stmt);
+  }
+
+  void generator::emit_declaration(const ast::declaration& decl) {
+    m_instructions.emplace_back(ir::symbol(decl.identifier));
+    if (decl.init) {
+      const value initial_val = emit_expression(decl.init.value());
+      m_instructions.emplace_back(ir::copy{initial_val, decl.identifier});
+    }
+  }
+
+  void generator::emit_block_item(const ast::block_item& item) {
+    std::visit(overload{[&](const std::unique_ptr<ast::statement>& stmt) { emit_statement(*stmt); },
+                        [&](const std::unique_ptr<ast::declaration>& decl) { emit_declaration(*decl); }},
+               item);
   }
 
   std::string generator::new_variable() { return "t." + std::to_string(tmp_variable_suffix++); }

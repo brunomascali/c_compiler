@@ -1,4 +1,4 @@
-#include <asm/codegen_context.hpp>
+#include <asm/stack_frame.hpp>
 #include <filesystem>
 #include <lexer/lexer.hpp>
 #include <parser/parser.hpp>
@@ -18,31 +18,27 @@ int main(const int argc, char** argv) {
 
   const auto source_code = utils::file_reader::read_all(argv[1]);
   const auto tokens = lexer(source_code).tokenize();
-  const auto ast = parser(tokens).parse();
-  const auto ir_instructions = ir::generator::generate(ast);
+  std::println("found {} tokens", tokens.size());
+  for (const auto& token : tokens) std::println("{}", token);
 
+  const auto ast = parser(tokens).parse();
   print_node(ast);
+
+  const auto ir_instructions = ir::generator::generate(ast);
   ir::print(ir_instructions);
 
-  // std::println("found {} tokens", tokens.size());
-  // for (const auto& token : tokens) std::println("{}", token);
-  //
-  //
-  // auto ctx = x86::codegen_context();
-  // auto asm_emitter = x86::asm_emitter(ctx);
-  // const auto asm_instructions =
-  //     ir_instructions
-  //     | std::ranges::views::transform([&](const auto& ir) {
-  //             return asm_emitter.emit(ir);
-  //         })
-  //     | std::ranges::views::join
-  //     | std::ranges::to<std::vector<x86::instruction_t>>();
-  //
-  // utils::file_writer writer("out.s");
-  // for (const auto& inst : asm_instructions) {
-  //   writer.write_line(x86::to_string(inst));
-  // }
-  // writer.write_line(".section .note.GNU-stack,\"\",@progbits\n");
+  auto asm_emitter = x86::asm_emitter();
+  utils::file_writer writer("out.s");
+
+  for (const auto& ir_function : ir_instructions.functions) {
+    for (const auto& ir_instruction : ir_function.instructions) {
+      for (const auto& instruction : asm_emitter.emit(ir_instruction)) {
+        writer.write_line(x86::to_string(instruction));
+      }
+    }
+  }
+
+  writer.write_line(".section .note.GNU-stack,\"\",@progbits\n");
 
   return 0;
 }

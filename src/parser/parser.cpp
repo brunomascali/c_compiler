@@ -30,23 +30,47 @@ ast::function parser::parse_function() {
   advance();
 
   while (current_token().kind() != token::token_kind::brace_close) {
-    block.items.emplace_back(parse_statement());
+    block.items.emplace_back(parse_block_item());
   }
   advance();
 
   return ast::function{identifier, std::move(block)};
 }
 
-ast::statement parser::parse_statement() {
+ast::block_item parser::parse_block_item() {
   using tk = token::token_kind;
   if (current_token_kind() == tk::int_kw) {
-    return parse_declaration();
+    return std::make_unique<ast::declaration>(parse_declaration());
   }
 
-  return parse_return();
+  return std::make_unique<ast::statement>(parse_statement());
 }
 
-ast::statement parser::parse_return() {
+ast::statement parser::parse_statement() {
+  using tk = token::token_kind;
+  if (current_token_kind() == tk::if_kw) {
+    return std::make_unique<ast::if_stmt>(parse_if());
+  }
+  if (current_token_kind() == tk::return_kw) {
+    return std::make_unique<ast::return_stmt>(parse_return());
+  }
+  if (current_token_kind() == tk::brace_open) {
+    advance();
+    auto block = std::make_unique<ast::block>();
+    while (current_token_kind() != tk::brace_close) {
+      block->items.emplace_back(parse_block_item());
+    }
+    advance();
+    return block;
+  }
+
+  auto e = parse_expr();
+  expect_or_fail(tk::semicolon);
+  advance();
+  return e;
+}
+
+ast::return_stmt parser::parse_return() {
   using tk = token::token_kind;
   expect_or_fail(tk::return_kw);
   advance();
@@ -54,10 +78,28 @@ ast::statement parser::parse_return() {
   expect_or_fail(tk::semicolon);
   advance();
 
-  return std::make_unique<ast::return_stmt>(std::move(expr));
+  return ast::return_stmt(std::move(expr));
 }
 
-ast::statement parser::parse_declaration() {
+ast::if_stmt parser::parse_if() {
+  using tk = token::token_kind;
+  expect_or_fail(tk::if_kw);
+  advance();
+  expect_or_fail(tk::paren_open);
+  advance();
+  auto cond = parse_expr();
+  expect_or_fail(tk::paren_close);
+  advance();
+  expect_or_fail(tk::brace_open);
+  advance();
+  auto then = parse_statement();
+  expect_or_fail(tk::brace_close);
+  advance();
+
+  return ast::if_stmt(std::move(cond), std::move(then));
+}
+
+ast::declaration parser::parse_declaration() {
   using tk = token::token_kind;
 
   expect_or_fail(tk::int_kw);
@@ -77,33 +119,28 @@ ast::statement parser::parse_declaration() {
   expect_or_fail(tk::semicolon);
   advance();
 
-  return std::make_unique<ast::declaration>(identifier, std::move(e));
+  return ast::declaration(identifier, std::move(e));
 }
 
 ast::expr parser::parse_expr(int min_prec) {
   ast::expr left = parse_factor();
 
   while (true) {
-    auto op_kind = current_token_kind();
+    const auto op_kind = current_token_kind();
     auto op_opt = binop_from_token_kind(op_kind);
 
-    // 1. Break if not a binary operator
     if (!op_opt.has_value()) break;
 
     auto prec_opt = precedence(op_kind);
-    // 2. Break if the operator precedence is too low
     if (!prec_opt.has_value() || prec_opt.value() < min_prec) break;
 
-    int current_prec = prec_opt.value();
-    advance();  // Consume the operator
+    const int current_prec = prec_opt.value();
+    advance();
 
-    // 3. Determine next min_prec based on associativity
-    // Assignment (=) is usually Right-Associative
-    int next_min_prec = (op_kind == token::token_kind::equal) ? current_prec : current_prec + 1;
+    const int next_min_prec = (op_kind == token::token_kind::equal) ? current_prec : current_prec + 1;
 
     auto right = parse_expr(next_min_prec);
 
-    // 4. Build the AST node
     if (op_kind == token::token_kind::equal) {
       left = std::make_unique<ast::assignment>(std::move(left), std::move(right));
     }
@@ -122,7 +159,7 @@ ast::expr parser::parse_factor() {
   if (current_token_kind() == tk::number) {
     const std::string number = current_token().lexeme();
     advance();
-    return ast::expr(std::stoi(number));
+    return {std::stoi(number)};
   }
 
   // unary
@@ -142,6 +179,7 @@ ast::expr parser::parse_factor() {
     return expr;
   }
 
+  // identifier
   if (current_token().kind() == tk::identifier) {
     auto expr = std::make_unique<ast::variable>(current_token().lexeme());
     advance();

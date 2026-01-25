@@ -21,7 +21,7 @@ namespace ast
   using expr = std::variant<int, Box<variable>, Box<unary>, Box<binary>, Box<assignment> >;
 
   using statement =
-    std::variant<Box<return_stmt>, Box<declaration>, Box<if_stmt>, Box<block>, expr, std::monostate>;
+    std::variant<Box<return_stmt>, Box<if_stmt>, Box<block>, expr, std::monostate>;
 }  // namespace ast
 
 #endif  // C_COMPILER_AST_FWD_HPP

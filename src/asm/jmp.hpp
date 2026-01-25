@@ -10,7 +10,8 @@ namespace x86
     enum condition
     {
       none,
-      E
+      E,
+      NE
     };
 
     jmp(condition c, std::string t) : cond(c), target(std::move(t)) {}
@@ -24,6 +25,7 @@ namespace x86
     switch (jmp.cond) {
       case cond::none: return std::format("  jmp {}", jmp.target);
       case cond::E: return std::format("  je {}", jmp.target);
+      case cond::NE: return std::format("  jne {}", jmp.target);
     }
     throw std::invalid_argument("jmp condition not implementedu");
   }

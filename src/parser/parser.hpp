@@ -21,11 +21,15 @@ class parser {
 
   ast::function parse_function();
 
+  ast::block_item parse_block_item();
+
+  ast::declaration parse_declaration();
+
   ast::statement parse_statement();
 
-  ast::statement parse_return();
+  ast::return_stmt parse_return();
 
-  ast::statement parse_declaration();
+  ast::if_stmt parse_if();
 
   ast::expr parse_expr(int min_prec = 0);
 

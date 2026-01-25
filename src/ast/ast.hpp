@@ -49,7 +49,7 @@ constexpr std::optional<ast::binary::op> binop_from_token_kind(const token::toke
     {tk::slash, binop::div},       {tk::percent, binop::rem},  {tk::double_ampersand, binop::and_},
     {tk::double_pipe, binop::or_}, {tk::double_eq, binop::eq}, {tk::neq, binop::neq},
     {tk::lt, binop::lt},           {tk::gt, binop::gt},        {tk::le, binop::le},
-    {tk::ge, binop::le},           {tk::equal, binop::assign},
+    {tk::ge, binop::ge},           {tk::equal, binop::assign},
   };
 
   for (const auto &[token_kind, binary_operator] : binary_operators) {

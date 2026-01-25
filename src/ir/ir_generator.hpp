@@ -18,9 +18,12 @@ namespace ir
     static program generate(const ast::program &root);
 
    private:
-    value emit_expression(const ast::expr &expr);
     void emit_func(const ast::function &func);
+    void emit_block(const ast::block& block);
+    void emit_block_item(const ast::block_item &item);
     void emit_statement(const ast::statement &stmt);
+    void emit_declaration(const ast::declaration &decl);
+    value emit_expression(const ast::expr &expr);
 
     std::string new_variable();
     std::string new_label();

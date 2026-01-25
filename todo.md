@@ -1,3 +1,5 @@
 - Resolve undeclared variables
 - Function with no return
 - Compound operators (+=, ++, ...)
+- Ternary operators
+- Goto
