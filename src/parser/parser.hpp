@@ -29,6 +29,8 @@ class parser {
 
   ast::return_stmt parse_return();
 
+  ast::while_stmt parse_while();
+
   ast::if_stmt parse_if();
 
   ast::expr parse_expr(int min_prec = 0);

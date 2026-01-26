@@ -97,7 +97,17 @@ namespace ir
                             emit_statement(s->then_branch);
                             m_instructions.emplace_back(ir::label{end_label});
                           },
-
+                          [&](const Box<ast::while_stmt>& w)
+                          {
+                            const std::string start_label = new_label();
+                            const std::string end_label = new_label();
+                            m_instructions.emplace_back(label(start_label));
+                            const value cond = emit_expression(w->condition);
+                            m_instructions.emplace_back(jump_if_zero(cond, end_label));
+                            emit_statement(w->body);
+                            m_instructions.emplace_back(jump(start_label));
+                            m_instructions.emplace_back(label(end_label));
+                          },
                           [&](const Box<ast::block>& b)
                           {
                             m_instructions.emplace_back(begin_scope{});

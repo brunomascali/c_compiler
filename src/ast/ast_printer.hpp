@@ -15,6 +15,7 @@ void print_node(const ast::block& b, const std::string& prefix, bool is_last);
 void print_node(const ast::declaration& d, const std::string& prefix, bool is_last);
 void print_node(const ast::statement& s, const std::string&, bool is_last);
 void print_node(const ast::return_stmt& r, const std::string& prefix, bool is_last);
+void print_node(const ast::while_stmt& r, const std::string& prefix, bool is_last);
 void print_node(const ast::block_item& r, const std::string& prefix, bool is_last);
 void print_node(const ast::expr& e, const std::string& prefix, bool is_last);
 void print_node(const ast::if_stmt& i, const std::string& prefix, bool is_last);

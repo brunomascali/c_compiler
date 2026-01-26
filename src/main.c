@@ -1,10 +1,7 @@
 int main(void) {
-  int a = 10;
-  {
-    int a = 20;
-    {
-      int a = 30;
-    }
+  int a = 0;
+  while (a < 3) {
+    a = a + 1;
   }
   return a;
 }

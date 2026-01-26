@@ -54,6 +54,9 @@ ast::statement parser::parse_statement() {
   if (current_token_kind() == tk::return_kw) {
     return std::make_unique<ast::return_stmt>(parse_return());
   }
+  if (current_token_kind() == tk::while_kw) {
+    return std::make_unique<ast::while_stmt>(parse_while());
+  }
   if (current_token_kind() == tk::brace_open) {
     advance();
     auto block = std::make_unique<ast::block>();
@@ -79,6 +82,20 @@ ast::return_stmt parser::parse_return() {
   advance();
 
   return ast::return_stmt(std::move(expr));
+}
+
+ast::while_stmt parser::parse_while() {
+  using tk = token::token_kind;
+  expect_or_fail(tk::while_kw);
+  advance();
+  expect_or_fail(tk::paren_open);
+  advance();
+  auto cond = parse_expr();
+  expect_or_fail(tk::paren_close);
+  advance();
+  auto body = parse_statement();
+
+  return ast::while_stmt(std::move(cond), std::move(body));
 }
 
 ast::if_stmt parser::parse_if() {

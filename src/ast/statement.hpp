@@ -24,6 +24,12 @@ namespace ast
     std::optional<statement> else_branch;
   };
 
+  struct while_stmt
+  {
+    expr condition;
+    statement body;
+  };
+
   struct block_item : std::variant<Box<statement>, Box<declaration>>
   {
     using variant::variant;
@@ -38,7 +44,6 @@ namespace ast
   {
     block block_;
   };
-
 
 }  // namespace ast
 

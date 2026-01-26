@@ -58,6 +58,14 @@ void print_node(const ast::return_stmt& r, const std::string& prefix, const bool
   print_node(r.value, child_prefix + "   ", true);
 }
 
+void print_node(const ast::while_stmt& r, const std::string& prefix, bool is_last) {
+  std::cout << prefix << branch(is_last) << "While" << std::endl;
+  const std::string child_prefix = prefix + (is_last ? "   " : "│  ");
+
+  std::cout << child_prefix << "╰─ Condition" << std::endl;
+  print_node(r.body, child_prefix + "   ", true);
+}
+
 void print_node(const ast::block_item& r, const std::string& prefix, bool is_last) {
   std::visit(overloaded{
       [&](const std::monostate&) {
