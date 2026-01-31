@@ -2,6 +2,8 @@
 
 #include "ir/ir_generator.hpp"
 
+using tk = token::token_kind;
+
 ast::program parser::parse() { return parse_program(); }
 
 ast::program parser::parse_program() {
@@ -11,34 +13,30 @@ ast::program parser::parse_program() {
 }
 
 ast::function parser::parse_function() {
-  ast::block block;
-  expect_or_fail(token::token_kind::int_kw);
-  advance();
+  consume(token::token_kind::int_kw, "Expected 'int' return type");
 
-  expect_or_fail(token::token_kind::identifier);
-  const auto identifier = current_token().lexeme();
-  advance();
+  const auto identifier = consume_and_extract_lexeme(token::token_kind::identifier, "Expected function name");
 
-  expect_or_fail(token::token_kind::paren_open);
-  advance();
-  expect_or_fail(token::token_kind::void_kw);
-  advance();
-  expect_or_fail(token::token_kind::paren_close);
-  advance();
+  consume(token::token_kind::paren_open, "Expected '(' after function name");
+  consume(token::token_kind::void_kw, "Expected 'void' in parameter list");
+  consume(token::token_kind::paren_close, "Expected ')' after parameter list");
 
-  expect_or_fail(token::token_kind::brace_open);
-  advance();
-
-  while (current_token().kind() != token::token_kind::brace_close) {
-    block.items.emplace_back(parse_block_item());
-  }
-  advance();
+  auto block = parse_block();
 
   return ast::function{identifier, std::move(block)};
 }
 
+ast::block parser::parse_block() {
+  consume(tk::brace_open, "Expected '{' at the start of the block");
+  ast::block block{};
+  while (current_token().kind() != token::token_kind::brace_close) {
+    block.items.emplace_back(parse_block_item());
+  }
+  consume(token::token_kind::brace_close, "Expected '}' at end of the block");
+  return block;
+}
+
 ast::block_item parser::parse_block_item() {
-  using tk = token::token_kind;
   if (current_token_kind() == tk::int_kw) {
     return std::make_unique<ast::declaration>(parse_declaration());
   }
@@ -46,97 +44,72 @@ ast::block_item parser::parse_block_item() {
   return std::make_unique<ast::statement>(parse_statement());
 }
 
-ast::statement parser::parse_statement() {
-  using tk = token::token_kind;
-  if (current_token_kind() == tk::if_kw) {
-    return std::make_unique<ast::if_stmt>(parse_if());
-  }
-  if (current_token_kind() == tk::return_kw) {
-    return std::make_unique<ast::return_stmt>(parse_return());
-  }
-  if (current_token_kind() == tk::while_kw) {
-    return std::make_unique<ast::while_stmt>(parse_while());
-  }
-  if (current_token_kind() == tk::brace_open) {
-    advance();
-    auto block = std::make_unique<ast::block>();
-    while (current_token_kind() != tk::brace_close) {
-      block->items.emplace_back(parse_block_item());
-    }
-    advance();
-    return block;
-  }
-
-  auto e = parse_expr();
-  expect_or_fail(tk::semicolon);
-  advance();
-  return e;
-}
-
-ast::return_stmt parser::parse_return() {
-  using tk = token::token_kind;
-  expect_or_fail(tk::return_kw);
-  advance();
-  auto expr = parse_expr();
-  expect_or_fail(tk::semicolon);
-  advance();
-
-  return ast::return_stmt(std::move(expr));
-}
-
-ast::while_stmt parser::parse_while() {
-  using tk = token::token_kind;
-  expect_or_fail(tk::while_kw);
-  advance();
-  expect_or_fail(tk::paren_open);
-  advance();
-  auto cond = parse_expr();
-  expect_or_fail(tk::paren_close);
-  advance();
-  auto body = parse_statement();
-
-  return ast::while_stmt(std::move(cond), std::move(body));
-}
-
-ast::if_stmt parser::parse_if() {
-  using tk = token::token_kind;
-  expect_or_fail(tk::if_kw);
-  advance();
-  expect_or_fail(tk::paren_open);
-  advance();
-  auto cond = parse_expr();
-  expect_or_fail(tk::paren_close);
-  advance();
-  expect_or_fail(tk::brace_open);
-  advance();
-  auto then = parse_statement();
-  expect_or_fail(tk::brace_close);
-  advance();
-
-  return ast::if_stmt(std::move(cond), std::move(then));
-}
-
 ast::declaration parser::parse_declaration() {
-  using tk = token::token_kind;
+  consume(tk::int_kw, "Expected 'int' type specifier");
 
-  expect_or_fail(tk::int_kw);
-  advance();
-
-  expect_or_fail(tk::identifier);
-  const auto identifier = current_token().lexeme();
-  advance();
+  const auto identifier = consume_and_extract_lexeme(tk::identifier, "Expected variable name");
 
   std::optional<ast::expr> e = std::nullopt;
 
   if (current_token().kind() == tk::equal) {
     advance();
-
     e = parse_expr();
   }
-  expect_or_fail(tk::semicolon);
-  advance();
+
+  consume(tk::semicolon, "Expected ';' after declaration");
 
   return ast::declaration(identifier, std::move(e));
+}
+
+ast::statement parser::parse_statement() {
+  switch (current_token_kind()) {
+    case tk::if_kw:
+      return std::make_unique<ast::if_stmt>(parse_if());
+    case tk::return_kw:
+      return std::make_unique<ast::return_stmt>(parse_return());
+    case tk::while_kw:
+      return std::make_unique<ast::while_stmt>(parse_while());
+    case tk::brace_open:
+      return std::make_unique<ast::block>(parse_block());
+    default:
+      std::unreachable();
+  }
+}
+
+ast::return_stmt parser::parse_return() {
+  consume(tk::return_kw, "Expected 'return' keyword");
+  auto expr = parse_expr();
+  consume(tk::semicolon, "Expected ';' after return statement");
+
+  return ast::return_stmt(std::move(expr));
+}
+
+ast::while_stmt parser::parse_while() {
+  consume(tk::while_kw, "Expected 'while' keyword");
+
+  consume(tk::paren_open, "Expected '(' after 'while'");
+  auto cond = parse_expr();
+  consume(tk::paren_close, "Expected ')' after while condition");
+
+  consume(tk::brace_open, "Expected '{' to start while-loop body");
+  auto body = parse_statement();
+  consume(tk::brace_close, "Expected '}' after while-loop body");
+
+  return ast::while_stmt(std::move(cond), std::move(body));
+}
+
+ast::if_stmt parser::parse_if() {
+  consume(tk::if_kw, "Expected 'if'");
+
+  consume(tk::paren_open, "Expected '(' after 'if'");
+  auto cond = parse_expr();
+  consume(tk::paren_close, "Expected ')' after condition");
+
+  consume(tk::brace_open, "Expected '{' to start if-body");
+  auto then = parse_statement();
+  consume(tk::brace_close, "Expected '}' after if-body");
+
+  return ast::if_stmt(std::move(cond), std::move(then));
 }
 
 ast::expr parser::parse_expr(int min_prec) {
@@ -170,8 +143,6 @@ ast::expr parser::parse_expr(int min_prec) {
 }
 
 ast::expr parser::parse_factor() {
-  using tk = token::token_kind;
-
   // literal
   if (current_token_kind() == tk::number) {
     const std::string number = current_token().lexeme();
@@ -203,11 +174,34 @@ ast::expr parser::parse_factor() {
     return expr;
   }
 
-  throw std::logic_error("Malformed factor");
+  throw std::runtime_error("Malformed factor");
+}
+
+void parser::consume(const token::token_kind kind, std::string_view error_msg) {
+  if (current_token().kind() != kind) {
+    throw std::runtime_error(error_msg.data());
+  }
+
+  advance();
+}
+
+std::string parser::consume_and_extract_lexeme(const token::token_kind kind, std::string_view error_msg) {
+  if (current_token().kind() != kind) {
+    throw std::runtime_error(error_msg.data());
+  }
+  auto lexeme = current_token().lexeme();
+  advance();
+  return lexeme;
 }
 
 void parser::expect_or_fail(const token::token_kind kind) const {
   if (const auto token = current_token(); token.kind() != kind) {
     throw std::runtime_error(std::format("expected '{}' found '{}'", kind, token));
+  }
+}
+
+void parser::expect_or_fail(const token::token_kind kind, std::string_view msg) const {
+  if (const auto token = current_token(); token.kind() != kind) {
+    throw std::runtime_error(msg.data());
   }
 }

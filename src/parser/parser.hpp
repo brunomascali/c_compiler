@@ -21,6 +21,8 @@ class parser {
 
   ast::function parse_function();
 
+  ast::block parse_block();
+
   ast::block_item parse_block_item();
 
   ast::declaration parse_declaration();
@@ -43,9 +45,13 @@ class parser {
 
   [[nodiscard]] token::token_kind current_token_kind() const { return m_tokens.at(m_idx).kind(); }
 
-  [[nodiscard]] token peek() const { return m_tokens.at(m_idx + 1); }
+  void consume(token::token_kind kind, std::string_view error_msg);
+
+  std::string consume_and_extract_lexeme(token::token_kind kind, std::string_view error_msg);
 
   void expect_or_fail(token::token_kind kind) const;
+
+  void expect_or_fail(token::token_kind kind, std::string_view msg) const;
 };
 
 

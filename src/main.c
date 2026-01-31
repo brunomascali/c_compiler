@@ -1,7 +1,7 @@
 int main(void) {
-  int a = 0;
-  while (a < 3) {
-    a = a + 1;
+  int a = 20;
+  {
+    int a = 40;
   }
   return a;
 }
