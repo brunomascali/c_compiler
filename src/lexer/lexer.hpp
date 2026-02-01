@@ -19,6 +19,7 @@ class lexer {
   explicit lexer(std::string source) : m_source(std::move(source)), m_index(0) {
     const std::vector<std::pair<token::token_kind, std::string>> rules = {
       {token::token_kind::while_kw, "while\\b"},
+      {token::token_kind::for_kw, "for\\b"},
       {token::token_kind::int_kw, "int\\b"},
       {token::token_kind::if_kw, "if\\b"},
       {token::token_kind::void_kw, "void\\b"},

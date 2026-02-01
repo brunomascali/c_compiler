@@ -3,3 +3,5 @@
 - Compound operators (+=, ++, ...)
 - Ternary operators
 - Goto
+- Improve 'for' statement
+- While/for body = single_stmt/block

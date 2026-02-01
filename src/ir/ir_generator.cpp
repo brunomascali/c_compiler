@@ -117,6 +117,20 @@ namespace ir
                             m_instructions.emplace_back(end_scope{});
                           },
 
+                          [&](const Box<ast::for_stmt>& f)
+                          {
+                            const auto start_label = new_label();
+                            const auto end_label = new_label();
+                            emit_declaration(f->init);
+                            m_instructions.emplace_back(label(start_label));
+                            const auto cond = emit_expression(f->condition);
+                            m_instructions.emplace_back(jump_if_zero(cond, end_label));
+                            emit_statement(f->body);
+                            emit_expression(f->post);
+                            m_instructions.emplace_back(jump(start_label));
+                            m_instructions.emplace_back(label(end_label));
+                          },
+
                           [&](const ast::expr& e) { emit_expression(e); },
 
                           [&](const std::monostate&) {}},

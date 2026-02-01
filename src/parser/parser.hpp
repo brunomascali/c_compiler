@@ -33,6 +33,8 @@ class parser {
 
   ast::while_stmt parse_while();
 
+  ast::for_stmt parse_for();
+
   ast::if_stmt parse_if();
 
   ast::expr parse_expr(int min_prec = 0);

@@ -69,10 +69,14 @@ ast::statement parser::parse_statement() {
       return std::make_unique<ast::return_stmt>(parse_return());
     case tk::while_kw:
       return std::make_unique<ast::while_stmt>(parse_while());
+    case tk::for_kw:
+      return std::make_unique<ast::for_stmt>(parse_for());
     case tk::brace_open:
       return std::make_unique<ast::block>(parse_block());
     default:
-      std::unreachable();
+      auto e = parse_expr();
+      consume(tk::semicolon, "Expected semicolon after expr");
+      return e;
   }
 }
 
@@ -96,6 +100,21 @@ ast::while_stmt parser::parse_while() {
   consume(tk::brace_close, "Expected '}' after while-loop body");
 
   return ast::while_stmt(std::move(cond), std::move(body));
+}
+
+ast::for_stmt parser::parse_for() {
+  consume(tk::for_kw, "Expected 'for'");
+  consume(tk::paren_open, "Expected '(' after 'for'");
+  auto decl = parse_declaration();
+  auto cond = parse_expr();
+  consume(tk::semicolon, "Expected ';' after 'for' break condition");
+  auto post = parse_expr();
+  consume(tk::paren_close, "Expected ')' after 'for'");
+  consume(tk::brace_open, "Expected '{' to start while-loop body");
+  auto body = parse_statement();
+  consume(tk::brace_close, "Expected '}' after while-loop body");
+
+  return ast::for_stmt(std::move(decl), std::move(cond), std::move(post), std::move(body));
 }
 
 ast::if_stmt parser::parse_if() {

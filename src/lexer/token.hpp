@@ -15,6 +15,7 @@ class token {
     if_kw,
     else_kw,
     while_kw,
+    for_kw,
     // non-fixed tokens
     identifier,
     number,

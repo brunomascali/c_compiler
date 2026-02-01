@@ -66,6 +66,23 @@ void print_node(const ast::while_stmt& r, const std::string& prefix, bool is_las
   print_node(r.body, child_prefix + "   ", true);
 }
 
+void print_node(const ast::for_stmt& f, const std::string& prefix, bool is_last) {
+  std::println("{}{}For", prefix, branch(is_last));
+  const std::string child_prefix = prefix + (is_last ? "   " : "│  ");
+
+  std::println("{}╞─ Init", child_prefix);
+  print_node(f.init, child_prefix + "│  ", false);
+
+  std::println("{}╞─ Condition", child_prefix);
+  print_node(f.condition, child_prefix + "│  ", false);
+
+  std::println("{}╞─ Post", child_prefix);
+  print_node(f.post, child_prefix + "│  ", false);
+
+  std::println("{}╰─ Body", child_prefix);
+  print_node(f.body, child_prefix + "   ", true);
+}
+
 void print_node(const ast::block_item& r, const std::string& prefix, bool is_last) {
   std::visit(overloaded{
       [&](const std::monostate&) {

@@ -30,6 +30,14 @@ namespace ast
     statement body;
   };
 
+  struct for_stmt
+  {
+    declaration init;
+    expr condition;
+    expr post;
+    statement body;
+  };
+
   struct block_item : std::variant<Box<statement>, Box<declaration>>
   {
     using variant::variant;
