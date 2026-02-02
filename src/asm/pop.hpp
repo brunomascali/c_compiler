@@ -9,10 +9,11 @@ namespace x86
   {
     explicit pop(operand s) : src(std::move(s)) {}
 
+    [[nodiscard]] std::string emit() const;
+
     operand src;
   };
 
-  [[nodiscard]] inline std::string to_string(const pop& p) { return std::format("  popq {}", p.src); }
 
 }  // namespace x86
 

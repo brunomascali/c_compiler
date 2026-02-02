@@ -33,7 +33,7 @@ int main(const int argc, char** argv) {
   for (const auto& ir_function : ir_instructions.functions) {
     for (const auto& ir_instruction : ir_function.instructions) {
       for (const auto& instruction : asm_emitter.emit(ir_instruction)) {
-        writer.write_line(x86::to_string(instruction));
+        writer.write_line(instruction.emit());
       }
     }
   }

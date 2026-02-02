@@ -9,12 +9,12 @@ namespace x86
 {
   struct label
   {
-    explicit label(std::string n) : name(std::move(n)) {}
+    explicit label(std::string n) : value(std::move(n)) {}
 
-    std::string name;
+    [[nodiscard]] std::string emit() const;
+
+    std::string value;
   };
-
-  [[nodiscard]] inline std::string to_string(const label& l) { return std::format("{}:", l.name); }
 }  // namespace x86
 
 #endif  // C_COMPILER_X86_LABEL_HPP

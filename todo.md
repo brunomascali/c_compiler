@@ -1,7 +1,17 @@
-- Resolve undeclared variables
-- Function with no return
-- Compound operators (+=, ++, ...)
-- Ternary operators
-- Goto
-- Improve 'for' statement
-- While/for body = single_stmt/block
+- [ ] Resolve undeclared variables
+- [ ] Function with no return
+- [ ] Compound operators
+  - [ ] x++
+  - [ ] ++x
+  - [ ] x+=
+- [ ] Ternary operators
+- [ ] Goto
+- [ ] Improve 'for' statement
+- [ ] While/for body -> single_stmt/block
+- [ ] Type checking
+- [ ] Support to more integer sizes
+  - [ ] 1 bit
+  - [ ] 8 bits 
+  - [ ] 16 bits 
+  - [ ] 32 bits
+  - [ ] 64 bits

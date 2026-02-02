@@ -50,6 +50,15 @@ namespace ast
     expr lhs;
     expr rhs;
   };
+
+  [[nodiscard]] inline bool is_comparison(const binary::op op) {
+    using binop = binary::op;
+    constexpr std::array comparison_operators = {
+      binop::eq, binop::neq, binop::lt, binop::gt, binop::le, binop::ge
+    };
+
+    return std::ranges::find(comparison_operators, op) != comparison_operators.end();
+  }
 }  // namespace ast
 
 #endif  // C_COMPILER_EXPR_HPP

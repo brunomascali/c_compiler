@@ -1,10 +1,12 @@
 #ifndef C_COMPILER_CMP_HPP
 #define C_COMPILER_CMP_HPP
 
+#include <asm/bit_width.hpp>
+#include <string>
 #include <utility>
 
+#include "instruction.hpp"
 #include "operand.hpp"
-#include <asm/bit_width.hpp>
 
 namespace x86
 {
@@ -12,11 +14,11 @@ namespace x86
   {
     cmp(operand a, operand b, const bit_width bw) : a(std::move(a)), b(std::move(b)), width(bw) {}
 
+    [[nodiscard]] std::string emit() const;
+
     operand a, b;
     bit_width width;
   };
-  [[nodiscard]] inline std::string to_string(const cmp& c) { return std::format("  cmp{} {}, {}", to_string(c.width), c.a, c.b); }
-
 }  // namespace x86
 
 #endif  // C_COMPILER_CMP_HPP
