@@ -16,7 +16,7 @@ struct token_rule
 
 class lexer {
  public:
-  explicit lexer(std::string source) : m_source(std::move(source)), m_index(0) {
+  explicit lexer() {
     const std::vector<std::pair<token::token_kind, std::string>> rules = {
       {token::token_kind::while_kw, "while\\b"},
       {token::token_kind::for_kw, "for\\b"},
@@ -46,7 +46,6 @@ class lexer {
       {token::token_kind::double_pipe, "\\|\\|"},
       {token::token_kind::double_eq, "=="},
       {token::token_kind::equal, "="},
-
     };
     std::string combined_pattern;
     for (const auto &[kind, pattern] : rules) {
@@ -58,13 +57,12 @@ class lexer {
     m_regex = std::regex(combined_pattern, std::regex::optimize);
   }
 
-  std::vector<token> tokenize();
+  std::vector<token> tokenize(std::string source);
 
  private:
-  std::string m_source;
   std::regex m_regex;
   std::vector<token::token_kind> m_kinds;
-  std::size_t m_index;
+  std::size_t m_index{0};
 };
 
 #endif  // C_COMPILER_LEXER_HPP

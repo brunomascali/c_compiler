@@ -8,30 +8,27 @@
 #include <memory>
 #include <vector>
 
-namespace ir
-{
-  template <typename T>
-  using Box = std::unique_ptr<T>;
+template <typename T>
+using Box = std::unique_ptr<T>;
 
-  class generator {
-   public:
-    static program generate(const ast::program &root);
+class ir_generator {
+ public:
+  static ir::program generate(const ast::program &root);
 
-   private:
-    void emit_func(const ast::function &func);
-    void emit_block(const ast::block& block);
-    void emit_block_item(const ast::block_item &item);
-    void emit_statement(const ast::statement &stmt);
-    void emit_declaration(const ast::declaration &decl);
-    value emit_expression(const ast::expr &expr);
+ private:
+  void emit_func(const ast::function &func);
+  void emit_block(const ast::block &block);
+  void emit_block_item(const ast::block_item &item);
+  void emit_statement(const ast::statement &stmt);
+  void emit_declaration(const ast::declaration &decl);
+  ir::value emit_expression(const ast::expr &expr);
 
-    std::string new_variable();
-    std::string new_label();
+  std::string new_variable();
+  std::string new_label();
 
-    std::vector<instruction> m_instructions{};
-    int tmp_variable_suffix{0};
-    int tmp_label_suffix{0};
-  };  // namespace ir
-}  // namespace ir
+  std::vector<ir::instruction> m_instructions{};
+  int tmp_variable_suffix{0};
+  int tmp_label_suffix{0};
+};
 
 #endif  // C_COMPILER_IR_HPP

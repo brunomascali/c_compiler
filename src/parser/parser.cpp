@@ -4,7 +4,10 @@
 
 using tk = token::token_kind;
 
-ast::program parser::parse() { return parse_program(); }
+ast::program parser::parse(std::vector<token> &tokens) {
+  m_tokens = std::move(tokens);
+  return parse_program();
+}
 
 ast::program parser::parse_program() {
   std::vector<ast::function> functions;

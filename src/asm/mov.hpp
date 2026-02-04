@@ -4,6 +4,8 @@
 #include <asm/bit_width.hpp>
 #include <asm/operand.hpp>
 
+#include "instruction.hpp"
+
 namespace x86
 {
   struct mov
@@ -14,6 +16,8 @@ namespace x86
     bit_width width;
 
     [[nodiscard]] std::string emit() const;
+    [[nodiscard]] bool is_legal() const;
+    [[nodiscard]] std::vector<instruction> legalize();
   };
 }  // namespace x86
 

@@ -2,9 +2,9 @@
 
 #include <regex>
 
-std::vector<token> lexer::tokenize() {
+std::vector<token> lexer::tokenize(std::string source) {
   std::vector<token> tokens;
-  const auto begin = std::sregex_iterator(m_source.begin(), m_source.end(), m_regex);
+  const auto begin = std::sregex_iterator(source.begin(), source.end(), m_regex);
   const auto end = std::sregex_iterator();
 
   for (auto i = begin; i != end; ++i) {

@@ -7,15 +7,16 @@
 #include "lexer/lexer.hpp"
 #include "lexer/token.hpp"
 
-class parser {
- public:
-  explicit parser(std::vector<token> tokens) : m_tokens(std::move(tokens)), m_idx(0) {}
+class parser
+{
+public:
+  parser() {}
 
-  ast::program parse();
+  ast::program parse(std::vector<token> &tokens);
 
- private:
-  std::vector<token> m_tokens;
-  std::size_t m_idx;
+private:
+  std::vector<token> m_tokens{};
+  std::size_t m_idx{0};
 
   ast::program parse_program();
 

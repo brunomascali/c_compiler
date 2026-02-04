@@ -18,139 +18,136 @@ struct overload : Ts...
 template <class... Ts>
 overload(Ts...) -> overload<Ts...>;
 
-namespace ir
-{
-  program generator::generate(const ast::program& root) {
-    program prog;
-    for (const auto& func : root.functions) {
-      generator generator;
-      generator.emit_func(func);
+ir::program ir_generator::generate(const ast::program& root) {
+  ir::program prog;
+  for (const auto& func : root.functions) {
+    ir_generator ir_generator;
+    ir_generator.emit_func(func);
 
-      prog.functions.emplace_back(func.name, generator.m_instructions);
-    }
-
-    return prog;
+    prog.functions.emplace_back(func.name, ir_generator.m_instructions);
   }
 
-  value generator::emit_expression(const ast::expr& expr) {
-    return std::visit(overload{[&](int val) -> value { return value{val}; },
+  return prog;
+}
 
-                               [&](const Box<ast::variable>& v) -> value { return value{v->identifier}; },
+ir::value ir_generator::emit_expression(const ast::expr& expr) {
+  return std::visit(overload{[&](int val) -> ir::value { return ir::value{val}; },
 
-                               [&](const Box<ast::unary>& u) -> value
-                               {
-                                 const value src = emit_expression(u->child);
-                                 std::string dst = new_variable();
+                             [&](const Box<ast::variable>& v) -> ir::value { return ir::value{v->identifier}; },
 
-                                 m_instructions.emplace_back(ir::unary{u->operation, src, dst});
-                                 return value{dst};
-                               },
+                             [&](const Box<ast::unary>& u) -> ir::value
+                             {
+                               const ir::value src = emit_expression(u->child);
+                               std::string dst = new_variable();
 
-                               [&](const Box<ast::binary>& b) -> value
-                               {
-                                 const value lhs = emit_expression(b->left);
-                                 const value rhs = emit_expression(b->right);
-                                 std::string dst = new_variable();
+                               m_instructions.emplace_back(ir::unary{u->operation, src, dst});
+                               return ir::value{dst};
+                             },
 
-                                 m_instructions.emplace_back(ir::binary{b->operation, lhs, rhs, dst});
-                                 return value{dst};
-                               },
+                             [&](const Box<ast::binary>& b) -> ir::value
+                             {
+                               const ir::value lhs = emit_expression(b->left);
+                               const ir::value rhs = emit_expression(b->right);
+                               std::string dst = new_variable();
 
-                               [&](const Box<ast::assignment>& a) -> ir::value
-                               {
-                                 const value rhs = emit_expression(a->rhs);
-                                 const value lhs = emit_expression(a->lhs);
+                               m_instructions.emplace_back(ir::binary{b->operation, lhs, rhs, dst});
+                               return ir::value{dst};
+                             },
 
-                                 m_instructions.emplace_back(ir::copy{rhs, lhs.as_id()});
-                                 return rhs;
-                               }},
-                      expr);
+                             [&](const Box<ast::assignment>& a) -> ir::value
+                             {
+                               const ir::value rhs = emit_expression(a->rhs);
+                               const ir::value lhs = emit_expression(a->lhs);
+
+                               m_instructions.emplace_back(ir::copy{rhs, lhs.as_id()});
+                               return rhs;
+                             }},
+                    expr);
+}
+
+void ir_generator::emit_func(const ast::function& func) {
+  m_instructions.emplace_back(ir::function(func.name));
+  emit_block(func.body);
+}
+
+void ir_generator::emit_block(const ast::block& block) {
+  m_instructions.emplace_back(ir::begin_scope{});
+  for (const auto& item : block.items) {
+    emit_block_item(item);
   }
+  m_instructions.emplace_back(ir::end_scope{});
+}
 
-  void generator::emit_func(const ast::function& func) {
-    m_instructions.emplace_back(function(func.name));
-    emit_block(func.body);
+void ir_generator::emit_statement(const ast::statement& stmt) {
+  std::visit(overloaded{[&](const Box<ast::return_stmt>& s)
+                        {
+                          const ir::value val = emit_expression(s->value);
+                          m_instructions.emplace_back(ir::return_{val});
+                        },
+
+                        [&](const Box<ast::if_stmt>& s)
+                        {
+                          const std::string end_label = new_label();
+
+                          const ir::value cond = emit_expression(s->condition);
+                          m_instructions.emplace_back(ir::jump_if_zero{cond, end_label});
+
+                          emit_statement(s->then_branch);
+                          m_instructions.emplace_back(ir::label{end_label});
+                        },
+                        [&](const Box<ast::while_stmt>& w)
+                        {
+                          const std::string start_label = new_label();
+                          const std::string end_label = new_label();
+                          m_instructions.emplace_back(ir::label(start_label));
+                          const ir::value cond = emit_expression(w->condition);
+                          m_instructions.emplace_back(ir::jump_if_zero(cond, end_label));
+                          emit_statement(w->body);
+                          m_instructions.emplace_back(ir::jump(start_label));
+                          m_instructions.emplace_back(ir::label(end_label));
+                        },
+                        [&](const Box<ast::block>& b)
+                        {
+                          m_instructions.emplace_back(ir::begin_scope{});
+                          for (const auto& item : b->items) {
+                            emit_block_item(item);
+                          }
+                          m_instructions.emplace_back(ir::end_scope{});
+                        },
+
+                        [&](const Box<ast::for_stmt>& f)
+                        {
+                          const auto start_label = new_label();
+                          const auto end_label = new_label();
+                          emit_declaration(f->init);
+                          m_instructions.emplace_back(ir::label(start_label));
+                          const auto cond = emit_expression(f->condition);
+                          m_instructions.emplace_back(ir::jump_if_zero(cond, end_label));
+                          emit_statement(f->body);
+                          emit_expression(f->post);
+                          m_instructions.emplace_back(ir::jump(start_label));
+                          m_instructions.emplace_back(ir::label(end_label));
+                        },
+
+                        [&](const ast::expr& e) { emit_expression(e); },
+
+                        [&](const std::monostate&) {}},
+             stmt);
+}
+
+void ir_generator::emit_declaration(const ast::declaration& decl) {
+  m_instructions.emplace_back(ir::symbol(decl.identifier));
+  if (decl.init) {
+    const ir::value initial_val = emit_expression(decl.init.value());
+    m_instructions.emplace_back(ir::copy{initial_val, decl.identifier});
   }
+}
 
-  void generator::emit_block(const ast::block& block) {
-    m_instructions.emplace_back(begin_scope{});
-    for (const auto& item : block.items) {
-      emit_block_item(item);
-    }
-    m_instructions.emplace_back(end_scope{});
-  }
+void ir_generator::emit_block_item(const ast::block_item& item) {
+  std::visit(overload{[&](const std::unique_ptr<ast::statement>& stmt) { emit_statement(*stmt); },
+                      [&](const std::unique_ptr<ast::declaration>& decl) { emit_declaration(*decl); }},
+             item);
+}
 
-  void generator::emit_statement(const ast::statement& stmt) {
-    std::visit(overloaded{[&](const Box<ast::return_stmt>& s)
-                          {
-                            const value val = emit_expression(s->value);
-                            m_instructions.emplace_back(ir::return_{val});
-                          },
-
-                          [&](const Box<ast::if_stmt>& s)
-                          {
-                            const std::string end_label = new_label();
-
-                            const value cond = emit_expression(s->condition);
-                            m_instructions.emplace_back(ir::jump_if_zero{cond, end_label});
-
-                            emit_statement(s->then_branch);
-                            m_instructions.emplace_back(ir::label{end_label});
-                          },
-                          [&](const Box<ast::while_stmt>& w)
-                          {
-                            const std::string start_label = new_label();
-                            const std::string end_label = new_label();
-                            m_instructions.emplace_back(label(start_label));
-                            const value cond = emit_expression(w->condition);
-                            m_instructions.emplace_back(jump_if_zero(cond, end_label));
-                            emit_statement(w->body);
-                            m_instructions.emplace_back(jump(start_label));
-                            m_instructions.emplace_back(label(end_label));
-                          },
-                          [&](const Box<ast::block>& b)
-                          {
-                            m_instructions.emplace_back(begin_scope{});
-                            for (const auto& item : b->items) {
-                              emit_block_item(item);
-                            }
-                            m_instructions.emplace_back(end_scope{});
-                          },
-
-                          [&](const Box<ast::for_stmt>& f)
-                          {
-                            const auto start_label = new_label();
-                            const auto end_label = new_label();
-                            emit_declaration(f->init);
-                            m_instructions.emplace_back(label(start_label));
-                            const auto cond = emit_expression(f->condition);
-                            m_instructions.emplace_back(jump_if_zero(cond, end_label));
-                            emit_statement(f->body);
-                            emit_expression(f->post);
-                            m_instructions.emplace_back(jump(start_label));
-                            m_instructions.emplace_back(label(end_label));
-                          },
-
-                          [&](const ast::expr& e) { emit_expression(e); },
-
-                          [&](const std::monostate&) {}},
-               stmt);
-  }
-
-  void generator::emit_declaration(const ast::declaration& decl) {
-    m_instructions.emplace_back(ir::symbol(decl.identifier));
-    if (decl.init) {
-      const value initial_val = emit_expression(decl.init.value());
-      m_instructions.emplace_back(ir::copy{initial_val, decl.identifier});
-    }
-  }
-
-  void generator::emit_block_item(const ast::block_item& item) {
-    std::visit(overload{[&](const std::unique_ptr<ast::statement>& stmt) { emit_statement(*stmt); },
-                        [&](const std::unique_ptr<ast::declaration>& decl) { emit_declaration(*decl); }},
-               item);
-  }
-
-  std::string generator::new_variable() { return "t." + std::to_string(tmp_variable_suffix++); }
-  std::string generator::new_label() { return "L." + std::to_string(tmp_label_suffix++); }
-}  // namespace ir
+std::string ir_generator::new_variable() { return "t." + std::to_string(tmp_variable_suffix++); }
+std::string ir_generator::new_label() { return "L." + std::to_string(tmp_label_suffix++); }
