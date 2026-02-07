@@ -2,5 +2,5 @@
 
 namespace x86
 {
-  std::string pop::emit() const { return std::format("popq {}", src); }
+  std::string pop::emit() const { return std::format("  popq {}", src); }
 }  // namespace x86

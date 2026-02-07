@@ -6,7 +6,11 @@ using tk = token::token_kind;
 
 ast::program parser::parse(std::vector<token> &tokens) {
   m_tokens = std::move(tokens);
-  return parse_program();
+  ast::program program{};
+  while (m_idx < m_tokens.size()) {
+    program.functions.push_back(parse_function());
+  }
+  return program;
 }
 
 ast::program parser::parse_program() {
@@ -193,6 +197,12 @@ ast::expr parser::parse_factor() {
   if (current_token().kind() == tk::identifier) {
     auto expr = std::make_unique<ast::variable>(current_token().lexeme());
     advance();
+    // fuimn
+    if (current_token_kind() == tk::paren_open) {
+      consume(tk::paren_open, "Expected '('");
+      consume(tk::paren_close, "Expected ')'");
+      return std::make_unique<ast::call>(expr->identifier);
+    }
     return expr;
   }
 

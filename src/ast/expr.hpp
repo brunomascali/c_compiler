@@ -51,6 +51,11 @@ namespace ast
     expr rhs;
   };
 
+  struct call
+  {
+    std::string identifier;
+  };
+
   [[nodiscard]] inline bool is_comparison(const binary::op op) {
     using binop = binary::op;
     constexpr std::array comparison_operators = {

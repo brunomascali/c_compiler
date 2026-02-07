@@ -20,6 +20,8 @@ namespace x86
 
     std::vector<instruction> handle_binary(const ir::binary &instruction);
 
+    std::vector<instruction> handle_call(const ir::call &i);
+
     std::vector<instruction> handle_return(const ir::return_ &instruction);
 
     std::vector<instruction> handle_start_function(const ir::function &instruction);

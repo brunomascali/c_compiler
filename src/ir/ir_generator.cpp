@@ -6,6 +6,7 @@
 #include "ast/ast.hpp"
 #include "ast/ast_printer.hpp"
 #include "binary.hpp"
+#include "call.hpp"
 #include "copy.hpp"
 #include "symbol.hpp"
 #include "unary.hpp"
@@ -30,7 +31,7 @@ ir::program ir_generator::generate(const ast::program& root) {
   return prog;
 }
 
-ir::value ir_generator::emit_expression(const ast::expr& expr) {
+ir::value ir_generator::emit_expression(const ast::expr& expr, std::optional<std::string> target) {
   return std::visit(overload{[&](int val) -> ir::value { return ir::value{val}; },
 
                              [&](const Box<ast::variable>& v) -> ir::value { return ir::value{v->identifier}; },
@@ -61,6 +62,17 @@ ir::value ir_generator::emit_expression(const ast::expr& expr) {
 
                                m_instructions.emplace_back(ir::copy{rhs, lhs.as_id()});
                                return rhs;
+                             },
+
+                             [&](const Box<ast::call>& c) -> ir::value
+                             {
+                               if (target.has_value()) {
+                                 m_instructions.emplace_back(ir::call{c->identifier, *target});
+                                 return {*target};
+                               }
+                               std::string tmp = new_variable();
+                               m_instructions.emplace_back(ir::call{c->identifier});
+                               return {tmp};
                              }},
                     expr);
 }
@@ -138,8 +150,12 @@ void ir_generator::emit_statement(const ast::statement& stmt) {
 void ir_generator::emit_declaration(const ast::declaration& decl) {
   m_instructions.emplace_back(ir::symbol(decl.identifier));
   if (decl.init) {
-    const ir::value initial_val = emit_expression(decl.init.value());
-    m_instructions.emplace_back(ir::copy{initial_val, decl.identifier});
+    const ir::value initial_val = emit_expression(decl.init.value(), decl.identifier);
+    if (std::holds_alternative<Box<ast::call>>(decl.init.value())) {
+
+    } else {
+      m_instructions.emplace_back(ir::copy{initial_val, decl.identifier});
+    }
   }
 }
 

@@ -15,3 +15,5 @@
   - [ ] 16 bits 
   - [ ] 32 bits
   - [ ] 64 bits
+- [ ] Print IR that generated each assembly line
+- [ ] Multiple parameter functions

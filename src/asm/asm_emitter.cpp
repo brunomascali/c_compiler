@@ -1,9 +1,11 @@
 #include "asm_emitter.hpp"
 
 #include <asm/instruction.hpp>
+#include <asm/leave.hpp>
 #include <iostream>
 
 #include "binary.hpp"
+#include "call.hpp"
 #include "cdq.hpp"
 #include "cmp.hpp"
 #include "jmp.hpp"
@@ -40,6 +42,7 @@ namespace x86
         [&](const ir::jump_if_not_zero &i) { return handle_jump_if_not_zero(i); },
         [&](const ir::label &i) { return handle_label(i); },
         [&](const ir::symbol &i) { return handle_symbol(i); },
+        [&](const ir::call &i) { return handle_call(i); },
         [&](const ir::begin_scope &i) { return handle_scope(i); },
         [&](const ir::end_scope &i) { return handle_scope(i); },
       },
@@ -81,12 +84,22 @@ namespace x86
     return {mov{src1, dst}, binary{op, src2, dst}};
   }
 
+  std::vector<instruction> asm_emitter::handle_call(const ir::call &i) {
+    std::vector<instruction> instructions{call(i)};
+
+    if (i.dst) {
+      const auto offset = m_stack_frame.get_variable_stack_offset(i.dst.value());
+      instructions.emplace_back(mov{operand(EAX), operand(operand::stack{.offset = offset})});
+    }
+    return instructions;
+  }
+
   std::vector<instruction> asm_emitter::handle_return(const ir::return_ &instruction) {
     const auto src = resolve_operand(instruction.val);
 
     return {
       mov(src, EAX),
-      pop(RBP),
+      leave{},
       ret{},
     };
   }

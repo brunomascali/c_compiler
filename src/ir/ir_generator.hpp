@@ -21,7 +21,7 @@ class ir_generator {
   void emit_block_item(const ast::block_item &item);
   void emit_statement(const ast::statement &stmt);
   void emit_declaration(const ast::declaration &decl);
-  ir::value emit_expression(const ast::expr &expr);
+  ir::value emit_expression(const ast::expr &expr, std::optional<std::string> target = std::nullopt);
 
   std::string new_variable();
   std::string new_label();

@@ -84,30 +84,33 @@ void print_node(const ast::for_stmt& f, const std::string& prefix, bool is_last)
 }
 
 void print_node(const ast::block_item& r, const std::string& prefix, bool is_last) {
-  std::visit(overloaded{
-      [&](const std::monostate&) {
-      },
-      [&](const auto& arg) {
-          if (arg) {
-              print_node(*arg, prefix, is_last);
-          }
-      }
-  }, r);
+  std::visit(overloaded{[&](const std::monostate&) {},
+                        [&](const auto& arg)
+                        {
+                          if (arg) {
+                            print_node(*arg, prefix, is_last);
+                          }
+                        }},
+             r);
 }
 void print_node(const ast::expr& e, const std::string& prefix, bool is_last) {
-  std::visit(
-    overloaded{[&](const int n) { std::cout << prefix << branch(is_last) << "Number " << n << std::endl; },
-               [&](const std::unique_ptr<ast::binary>& bin)
-               {
-                 std::cout << prefix << branch(is_last) << op_to_string(bin->operation) << std::endl;
-                 const std::string child_prefix = prefix + (is_last ? "   " : "│  ");
-                 print_node(bin->left, child_prefix, false);
-                 print_node(bin->right, child_prefix, true);
-               },
-               [&](const std::unique_ptr<ast::variable>& var)
-               { std::cout << prefix << branch(is_last) << "Variable: " << var->identifier << std::endl; },
-               [&](const auto&) { std::cout << prefix << branch(is_last) << "Other Expression" << std::endl; }},
-    e);
+  std::visit(overloaded{[&](const int n) { std::cout << prefix << branch(is_last) << "Number " << n << std::endl; },
+                        [&](const std::unique_ptr<ast::binary>& bin)
+                        {
+                          std::cout << prefix << branch(is_last) << op_to_string(bin->operation) << std::endl;
+                          const std::string child_prefix = prefix + (is_last ? "   " : "│  ");
+                          print_node(bin->left, child_prefix, false);
+                          print_node(bin->right, child_prefix, true);
+                        },
+                        [&](const std::unique_ptr<ast::variable>& var)
+                        { std::cout << prefix << branch(is_last) << "Variable: " << var->identifier << std::endl; },
+                        [&](const auto&) { std::cout << prefix << branch(is_last) << "Other Expression" << std::endl; },
+                        [&](const std::unique_ptr<ast::call>& c)
+                        {
+                          std::cout << prefix << (is_last ? "└── " : "├── ") << "Call: " << c->identifier << "\n";
+                          std::string new_prefix = prefix + (is_last ? "    " : "│   ");
+                        }},
+             e);
 }
 
 void print_node(const ast::if_stmt& i, const std::string& prefix, bool is_last) {

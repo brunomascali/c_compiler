@@ -172,7 +172,7 @@ struct std::formatter<x86::operand>
           return std::format_to(ctx.out(), "%{}", ::to_string(arg));
         }
         if constexpr (std::is_same_v<T, x86::operand::identifier>) {
-          return std::format_to(ctx.out(), "????");
+          return std::format_to(ctx.out(), "{}", arg.name);
         }
         if constexpr (std::is_same_v<T, x86::operand::stack>) {
           return std::format_to(ctx.out(), "{}(%rbp)", arg.offset);

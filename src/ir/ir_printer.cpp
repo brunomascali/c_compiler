@@ -3,6 +3,7 @@
 #include <ast/ast_printer.hpp>
 #include <format>
 #include <iostream>
+#include <print>
 
 namespace ir
 {
@@ -53,6 +54,14 @@ namespace ir
         [](const end_scope&) { std::cout << "\b\b\b\b" << "end_scope\n"; },
         [](const symbol& s) { std::cout << "symbol " << s.name << "\n"; },
         [](const function& f) { std::cout << "\b\b\b\bfunction " << f.name << "():\n"; },
+        [](const call& c)
+        {
+          if (c.dst) {
+            std::println("{} = call {}", c.dst.value(), c.name);
+          } else {
+            std::println("call {}", c.name);
+          }
+        },
         [](const auto&) { std::cout << "unknown instruction\n"; }},
       ins);
   }

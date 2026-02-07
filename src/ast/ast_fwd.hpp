@@ -13,6 +13,7 @@ namespace ast
   struct binary;
   struct variable;
   struct assignment;
+  struct call;
   struct return_stmt;
   struct while_stmt;
   struct for_stmt;
@@ -20,7 +21,7 @@ namespace ast
   struct if_stmt;
   struct block;
 
-  using expr = std::variant<int, Box<variable>, Box<unary>, Box<binary>, Box<assignment> >;
+  using expr = std::variant<int, Box<variable>, Box<unary>, Box<binary>, Box<assignment>, Box<call>>;
 
   using statement =
     std::variant<Box<return_stmt>, Box<if_stmt>, Box<block>, Box<while_stmt>, Box<for_stmt>, expr, std::monostate>;
