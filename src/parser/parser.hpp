@@ -1,8 +1,6 @@
 #ifndef C_COMPILER_PARSER_HPP
 #define C_COMPILER_PARSER_HPP
 
-#include <generator>
-
 #include "ast/ast.hpp"
 #include "lexer/lexer.hpp"
 #include "lexer/token.hpp"

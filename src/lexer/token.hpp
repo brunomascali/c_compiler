@@ -43,6 +43,7 @@ class token {
     gt,
     le,
     ge,
+    post_inc,
   };
 
   explicit token(const token_kind k, std::string lexeme = "") : m_kind(k), m_lexeme(std::move(lexeme)) {}
@@ -85,100 +86,80 @@ inline std::optional<int> precedence(const token::token_kind kind) {
   }
 }
 
+constexpr std::string_view to_string(const token::token_kind k) {
+  using enum token::token_kind;
+  switch (k) {
+    case int_kw:
+      return "int";
+    case void_kw:
+      return "void";
+    case return_kw:
+      return "return";
+    case identifier:
+      return "identifier";
+    case number:
+      return "number";
+    case paren_open:
+      return "(";
+    case paren_close:
+      return ")";
+    case brace_open:
+      return "{";
+    case brace_close:
+      return "}";
+    case semicolon:
+      return ";";
+    case hyphen:
+      return "-";
+    case tilde:
+      return "~";
+    case plus:
+      return "+";
+    case asterisk:
+      return "*";
+    case slash:
+      return "/";
+    case percent:
+      return "%";
+    case negation:
+      return "!";
+    case double_ampersand:
+      return "&&";
+    case double_pipe:
+      return "||";
+    case double_eq:
+      return "==";
+    case neq:
+      return "!=";
+    case lt:
+      return "<";
+    case gt:
+      return ">";
+    case le:
+      return "<=";
+    case ge:
+      return ">=";
+    case if_kw:
+      return "if";
+    case else_kw:
+      return "else";
+    case equal:
+      return "==";
+    case post_inc:
+      return "++";
+    default:
+      return "unknown_token";
+  }
+}
+
+
 template <>
 struct std::formatter<token::token_kind>
 {
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
   auto format(token::token_kind k, std::format_context &ctx) const {
-    std::string_view name = "unknown";
-    switch (k) {
-      case token::token_kind::int_kw:
-        name = "int";
-        break;
-      case token::token_kind::void_kw:
-        name = "void";
-        break;
-      case token::token_kind::return_kw:
-        name = "return";
-        break;
-      case token::token_kind::identifier:
-        name = "identifier";
-        break;
-      case token::token_kind::number:
-        name = "number";
-        break;
-      case token::token_kind::paren_open:
-        name = "(";
-        break;
-      case token::token_kind::paren_close:
-        name = ")";
-        break;
-      case token::token_kind::brace_open:
-        name = "{";
-        break;
-      case token::token_kind::brace_close:
-        name = "}";
-        break;
-      case token::token_kind::semicolon:
-        name = ";";
-        break;
-      case token::token_kind::hyphen:
-        name = "-";
-        break;
-      case token::token_kind::tilde:
-        name = "~";
-        break;
-      case token::token_kind::plus:
-        name = "+";
-        break;
-      case token::token_kind::asterisk:
-        name = "*";
-        break;
-      case token::token_kind::slash:
-        name = "/";
-        break;
-      case token::token_kind::percent:
-        name = "%";
-        break;
-      case token::token_kind::negation:
-        name = "!";
-        break;
-      case token::token_kind::double_ampersand:
-        name = "&&";
-        break;
-      case token::token_kind::double_pipe:
-        name = "||";
-        break;
-      case token::token_kind::double_eq:
-        name = "==";
-        break;
-      case token::token_kind::neq:
-        name = "!=";
-        break;
-      case token::token_kind::lt:
-        name = "<";
-        break;
-      case token::token_kind::gt:
-        name = ">";
-        break;
-      case token::token_kind::le:
-        name = "<=";
-        break;
-      case token::token_kind::ge:
-        name = ">=";
-        break;
-      case token::token_kind::if_kw:
-        name = "if";
-        break;
-      case token::token_kind::else_kw:
-        name = "else";
-        break;
-      case token::token_kind::equal:
-        name = "==";
-        break;
-    }
-    return std::format_to(ctx.out(), "{}", name);
+    return std::format_to(ctx.out(), "{}", to_string(k));
   }
 };
 

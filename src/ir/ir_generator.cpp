@@ -66,12 +66,12 @@ ir::value ir_generator::emit_expression(const ast::expr& expr, std::optional<std
 
                              [&](const Box<ast::call>& c) -> ir::value
                              {
-                               if (target.has_value()) {
-                                 m_instructions.emplace_back(ir::call{c->identifier, *target});
-                                 return {*target};
-                               }
                                std::string tmp = new_variable();
-                               m_instructions.emplace_back(ir::call{c->identifier});
+                               m_instructions.emplace_back(ir::symbol{tmp});
+                               m_instructions.emplace_back(ir::call{c->identifier, tmp});
+                               if (target.has_value()) {
+                                 m_instructions.emplace_back(ir::copy{tmp, *target});
+                               }
                                return {tmp};
                              }},
                     expr);
@@ -152,8 +152,8 @@ void ir_generator::emit_declaration(const ast::declaration& decl) {
   if (decl.init) {
     const ir::value initial_val = emit_expression(decl.init.value(), decl.identifier);
     if (std::holds_alternative<Box<ast::call>>(decl.init.value())) {
-
-    } else {
+    }
+    else {
       m_instructions.emplace_back(ir::copy{initial_val, decl.identifier});
     }
   }

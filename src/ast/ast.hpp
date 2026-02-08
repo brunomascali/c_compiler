@@ -28,35 +28,39 @@ namespace ast
 
 }  // namespace ast
 
-constexpr std::optional<ast::unary::op> unop_from_token_kind(const token::token_kind k) {
+constexpr std::optional<ast::unary::op> unop_from_token_kind(token::token_kind k) {
   using tk = token::token_kind;
   using unop = ast::unary::op;
-  static std::vector<std::tuple<tk, unop>> unary_operators = {
-    {tk::tilde, unop::negate}, {tk::hyphen, unop::not_}, {tk::negation, unop::negate}};
 
-  for (const auto &[token_kind, unary_operator] : unary_operators) {
-    if (token_kind == k) return unary_operator;
+  switch (k) {
+    case tk::tilde:    return unop::negate;
+    case tk::hyphen:   return unop::not_;
+    case tk::negation: return unop::negate;
+    default:           return std::nullopt;
   }
-
-  return std::nullopt;
 }
 
-constexpr std::optional<ast::binary::op> binop_from_token_kind(const token::token_kind k) {
+constexpr std::optional<ast::binary::op> binop_from_token_kind(token::token_kind k) {
   using tk = token::token_kind;
   using binop = ast::binary::op;
-  static std::vector<std::tuple<tk, binop>> binary_operators = {
-    {tk::plus, binop::add},        {tk::hyphen, binop::sub},   {tk::asterisk, binop::mul},
-    {tk::slash, binop::div},       {tk::percent, binop::rem},  {tk::double_ampersand, binop::and_},
-    {tk::double_pipe, binop::or_}, {tk::double_eq, binop::eq}, {tk::neq, binop::neq},
-    {tk::lt, binop::lt},           {tk::gt, binop::gt},        {tk::le, binop::le},
-    {tk::ge, binop::ge},           {tk::equal, binop::assign},
-  };
 
-  for (const auto &[token_kind, binary_operator] : binary_operators) {
-    if (token_kind == k) return binary_operator;
+  switch (k) {
+    case tk::plus:             return binop::add;
+    case tk::hyphen:           return binop::sub;
+    case tk::asterisk:         return binop::mul;
+    case tk::slash:            return binop::div;
+    case tk::percent:          return binop::rem;
+    case tk::double_ampersand: return binop::and_;
+    case tk::double_pipe:      return binop::or_;
+    case tk::double_eq:        return binop::eq;
+    case tk::neq:              return binop::neq;
+    case tk::lt:               return binop::lt;
+    case tk::gt:               return binop::gt;
+    case tk::le:               return binop::le;
+    case tk::ge:               return binop::ge;
+    case tk::equal:            return binop::assign;
+    default:                   return std::nullopt;
   }
-
-  return std::nullopt;
 }
 
 #endif  // C_COMPILER_AST_HPP

@@ -37,6 +37,7 @@ class lexer {
       {token::token_kind::lt, "<"},
       {token::token_kind::gt, ">"},
       {token::token_kind::hyphen, "-"},
+      {token::token_kind::post_inc, "\\+\\+"},
       {token::token_kind::plus, "\\+"},
       {token::token_kind::asterisk, "\\*"},
       {token::token_kind::slash, "\\/"},

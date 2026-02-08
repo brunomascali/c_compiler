@@ -3,6 +3,5 @@ int foo(void) {
 }
 
 int main(void) {
-  int a = foo();
-  return a;
+  return foo();
 }

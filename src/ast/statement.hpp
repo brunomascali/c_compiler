@@ -3,6 +3,7 @@
 
 #include <ast/ast_fwd.hpp>
 #include <vector>
+#include <optional>
 
 namespace ast
 {

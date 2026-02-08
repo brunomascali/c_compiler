@@ -197,7 +197,7 @@ ast::expr parser::parse_factor() {
   if (current_token().kind() == tk::identifier) {
     auto expr = std::make_unique<ast::variable>(current_token().lexeme());
     advance();
-    // fuimn
+    // function call
     if (current_token_kind() == tk::paren_open) {
       consume(tk::paren_open, "Expected '('");
       consume(tk::paren_close, "Expected ')'");

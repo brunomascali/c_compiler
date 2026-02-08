@@ -2,6 +2,7 @@
 #define C_COMPILER_EXPR_HPP
 
 #include <ast/ast_fwd.hpp>
+#include <array>
 
 namespace ast
 {
