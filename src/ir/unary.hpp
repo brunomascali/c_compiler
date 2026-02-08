@@ -1,5 +1,5 @@
-#ifndef C_COMPILER_UNARY_HPP
-#define C_COMPILER_UNARY_HPP
+#ifndef C_COMPILER_IR_UNARY_HPP
+#define C_COMPILER_IR_UNARY_HPP
 
 #include <ast/expr.hpp>
 #include <ir/value.hpp>
@@ -14,4 +14,4 @@ struct unary {
 };
 } // namespace ir
 
-#endif // C_COMPILER_UNARY_HPP
+#endif // C_COMPILER_IR_UNARY_HPP

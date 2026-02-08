@@ -43,7 +43,7 @@ class token {
     gt,
     le,
     ge,
-    post_inc,
+    doub,
   };
 
   explicit token(const token_kind k, std::string lexeme = "") : m_kind(k), m_lexeme(std::move(lexeme)) {}
@@ -145,8 +145,6 @@ constexpr std::string_view to_string(const token::token_kind k) {
       return "else";
     case equal:
       return "==";
-    case post_inc:
-      return "++";
     default:
       return "unknown_token";
   }

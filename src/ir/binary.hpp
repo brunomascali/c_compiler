@@ -1,8 +1,8 @@
-#ifndef C_COMPILER_BINARY_HPP
-#define C_COMPILER_BINARY_HPP
+#ifndef C_COMPILER_IR_BINARY_HPP
+#define C_COMPILER_IR_BINARY_HPP
 
-#include <ast/ast.hpp>
 #include <ir/value.hpp>
+#include <ast/binary.hpp>
 
 namespace ir {
 struct binary {
@@ -16,4 +16,4 @@ struct binary {
 };
 } // namespace ir
 
-#endif // C_COMPILER_BINARY_HPP
+#endif // C_COMPILER_IR_BINARY_HPP

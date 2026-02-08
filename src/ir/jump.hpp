@@ -1,5 +1,5 @@
-#ifndef C_COMPILER_JUMP_HPP
-#define C_COMPILER_JUMP_HPP
+#ifndef C_COMPILER_IR_JUMP_HPP
+#define C_COMPILER_IR_JUMP_HPP
 
 #include <ast/ast.hpp>
 #include <ir/defs.hpp>
@@ -12,4 +12,4 @@ struct jump {
 };
 } // namespace ir
 
-#endif // C_COMPILER_JUMP_HPP
+#endif // C_COMPILER_IR_JUMP_HPP

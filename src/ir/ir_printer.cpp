@@ -57,9 +57,9 @@ namespace ir
         [](const call& c)
         {
           if (c.dst) {
-            std::println("{} = call {}", c.dst.value(), c.name);
+            std::println("{} = call {}", c.dst.value(), c.function_name);
           } else {
-            std::println("call {}", c.name);
+            std::println("call {}", c.function_name);
           }
         },
         [](const auto&) { std::cout << "unknown instruction\n"; }},

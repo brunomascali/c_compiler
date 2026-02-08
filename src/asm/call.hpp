@@ -9,7 +9,7 @@ namespace x86
 {
   struct call
   {
-    explicit call(const ir::call& instruction) : name(operand::identifier {instruction.name}) {}
+    explicit call(const ir::call& instruction) : name(operand::identifier {instruction.function_name}) {}
 
     [[nodiscard]] std::string emit() const;
 

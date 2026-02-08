@@ -143,7 +143,7 @@ ast::expr parser::parse_expr(int min_prec) {
 
   while (true) {
     const auto op_kind = current_token_kind();
-    auto op_opt = binop_from_token_kind(op_kind);
+    auto op_opt = ast::binop_from_token_kind(op_kind);
 
     if (!op_opt.has_value()) break;
 
@@ -171,13 +171,12 @@ ast::expr parser::parse_expr(int min_prec) {
 ast::expr parser::parse_factor() {
   // literal
   if (current_token_kind() == tk::number) {
-    const std::string number = current_token().lexeme();
-    advance();
+    const auto number = consume_and_extract_lexeme(tk::number, "Expected number");
     return {std::stoi(number)};
   }
 
   // unary
-  if (const auto opt = unop_from_token_kind(current_token_kind()); opt.has_value()) {
+  if (const auto opt = ast::unop_from_token_kind(current_token_kind()); opt.has_value()) {
     const auto unary_operator = opt.value();
     advance();
     auto operand = parse_expr();

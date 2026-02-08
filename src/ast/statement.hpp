@@ -4,9 +4,19 @@
 #include <ast/ast_fwd.hpp>
 #include <vector>
 #include <optional>
+#include <ast/expr.hpp>
 
 namespace ast
 {
+  struct return_stmt;
+  struct if_stmt;
+  struct block;
+  struct while_stmt;
+  struct for_stmt;
+
+  using statement =
+    std::variant<Box<return_stmt>, Box<if_stmt>, Box<block>, Box<while_stmt>, Box<for_stmt>, expr, std::monostate>;
+
   struct return_stmt
   {
     expr value;

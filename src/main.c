@@ -1,5 +1,5 @@
 int foo(void) {
-  return 69;
+  return 42;
 }
 
 int main(void) {

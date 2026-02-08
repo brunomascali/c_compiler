@@ -1,6 +1,8 @@
 #ifndef C_COMPILER_COPY_HPP
 #define C_COMPILER_COPY_HPP
 
+#include <ir/value.hpp>
+
 namespace ir {
 struct copy {
   copy(value src, value dst) : src(std::move(src)), dst(std::move(dst)) {}

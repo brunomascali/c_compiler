@@ -1,16 +1,18 @@
-#ifndef C_COMPILER_CALL_HPP
-#define C_COMPILER_CALL_HPP
+#ifndef C_COMPILER_IR_CALL_HPP
+#define C_COMPILER_IR_CALL_HPP
+
+#include <string>
 #include <optional>
 
 namespace ir
 {
   struct call
   {
-    explicit call(std::string name, std::optional<std::string> dst = std::nullopt) : name(std::move(name)), dst(std::move(dst)) {}
+    explicit call(std::string name, std::optional<std::string> dst = std::nullopt) : function_name(std::move(name)), dst(std::move(dst)) {}
 
-    std::string name;
+    std::string function_name;
     std::optional<std::string> dst;
   };
 }  // namespace ir
 
-#endif  // C_COMPILER_CALL_HPP
+#endif  // C_COMPILER_IR_CALL_HPP

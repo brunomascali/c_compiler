@@ -1,6 +1,8 @@
 #ifndef C_COMPILER_FUNCTION_HPP
 #define C_COMPILER_FUNCTION_HPP
 
+#include <vector>
+
 namespace ir {
   struct instruction;
 

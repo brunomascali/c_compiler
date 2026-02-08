@@ -1,9 +1,9 @@
-- [ ] Resolve undeclared variables
-- [ ] Function with no return
 - [ ] Compound operators
   - [ ] x++
   - [ ] ++x
   - [ ] x+=
+- [ ] Resolve undeclared variables
+- [ ] Function with no return
 - [ ] Ternary operators
 - [ ] Goto
 - [ ] Improve 'for' statement

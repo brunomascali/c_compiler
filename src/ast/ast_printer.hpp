@@ -2,12 +2,18 @@
 #define C_COMPILER_AST_PRINTER_HPP
 
 #include <ast/ast.hpp>
+#include <ast/expr.hpp>
 #include <string>
 
-#include "expr.hpp"
+#include "binary.hpp"
 
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template <class... Ts>
+struct overloaded : Ts...
+{
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
 
 void print_node(const ast::program& p);
 void print_node(const ast::function& f, const std::string& prefix, bool is_last);
