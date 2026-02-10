@@ -1,26 +1,24 @@
 #ifndef C_COMPILER_AST_HPP
 #define C_COMPILER_AST_HPP
 
-#include <ast/ast_fwd.hpp>
-#include <ast/statement.hpp>
-#include <lexer/token.hpp>
-#include <string>
-#include <vector>
+// #include <ast/statement/block.hpp>
+// #include <lexer/token.hpp>
+// #include <string>
 
 namespace ast
 {
-  struct function;
+  // struct function;
 
-  struct program
-  {
-    std::vector<function> functions;
-  };
+  // struct program
+  // {
+  //   std::vector<function> functions;
+  // };
 
-  struct function
-  {
-    std::string name;
-    block body;
-  };
+  // struct function
+  // {
+  //   std::string name;
+  //   block body;
+  // };
 
 
 }  // namespace ast

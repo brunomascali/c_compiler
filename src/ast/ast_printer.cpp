@@ -1,6 +1,6 @@
-#include <ast/ast_printer.hpp>
 #include <iostream>
 #include <print>
+#include <ast/ast_printer.hpp>
 
 std::string branch(const bool is_last) { return is_last ? "╰─ " : "╞─ "; }
 
@@ -50,7 +50,7 @@ void print_node(const ast::declaration& d, const std::string& prefix, bool is_la
   }
 }
 
-void print_node(const ast::return_stmt& r, const std::string& prefix, const bool is_last) {
+void print_node(const ast::return_& r, const std::string& prefix, const bool is_last) {
   std::cout << prefix << branch(is_last) << "Return" << std::endl;
   const std::string child_prefix = prefix + (is_last ? "   " : "│  ");
 
@@ -58,7 +58,7 @@ void print_node(const ast::return_stmt& r, const std::string& prefix, const bool
   print_node(r.value, child_prefix + "   ", true);
 }
 
-void print_node(const ast::while_stmt& r, const std::string& prefix, bool is_last) {
+void print_node(const ast::while_& r, const std::string& prefix, bool is_last) {
   std::cout << prefix << branch(is_last) << "While" << std::endl;
   const std::string child_prefix = prefix + (is_last ? "   " : "│  ");
 
@@ -66,7 +66,7 @@ void print_node(const ast::while_stmt& r, const std::string& prefix, bool is_las
   print_node(r.body, child_prefix + "   ", true);
 }
 
-void print_node(const ast::for_stmt& f, const std::string& prefix, bool is_last) {
+void print_node(const ast::for_& f, const std::string& prefix, bool is_last) {
   std::println("{}{}For", prefix, branch(is_last));
   const std::string child_prefix = prefix + (is_last ? "   " : "│  ");
 
@@ -113,7 +113,7 @@ void print_node(const ast::expr& e, const std::string& prefix, bool is_last) {
              e);
 }
 
-void print_node(const ast::if_stmt& i, const std::string& prefix, bool is_last) {
+void print_node(const ast::if_& i, const std::string& prefix, bool is_last) {
   std::println("{}{}If Statement", prefix, branch(is_last));
   const auto child_prefix = prefix + (is_last ? "   " : "│  ");
 

@@ -1,7 +1,7 @@
 #ifndef C_COMPILER_IR_UNARY_HPP
 #define C_COMPILER_IR_UNARY_HPP
 
-#include <ast/expr.hpp>
+#include <ast/expr/unary.hpp>
 #include <ir/value.hpp>
 
 namespace ir {

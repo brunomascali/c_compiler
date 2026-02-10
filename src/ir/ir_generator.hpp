@@ -1,7 +1,7 @@
 #ifndef C_COMPILER_IR_HPP
 #define C_COMPILER_IR_HPP
 
-#include <ast/ast.hpp>
+#include <ast/program.hpp>
 #include <ast/ast_fwd.hpp>
 #include <ir/defs.hpp>
 #include <ir/program.hpp>

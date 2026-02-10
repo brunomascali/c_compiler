@@ -91,13 +91,13 @@ void ir_generator::emit_block(const ast::block& block) {
 }
 
 void ir_generator::emit_statement(const ast::statement& stmt) {
-  std::visit(overloaded{[&](const Box<ast::return_stmt>& s)
+  std::visit(overloaded{[&](const Box<ast::return_>& s)
                         {
                           const ir::value val = emit_expression(s->value);
                           m_instructions.emplace_back(ir::return_{val});
                         },
 
-                        [&](const Box<ast::if_stmt>& s)
+                        [&](const Box<ast::if_>& s)
                         {
                           const std::string end_label = new_label();
 
@@ -107,7 +107,7 @@ void ir_generator::emit_statement(const ast::statement& stmt) {
                           emit_statement(s->then_branch);
                           m_instructions.emplace_back(ir::label{end_label});
                         },
-                        [&](const Box<ast::while_stmt>& w)
+                        [&](const Box<ast::while_>& w)
                         {
                           const std::string start_label = new_label();
                           const std::string end_label = new_label();
@@ -127,7 +127,7 @@ void ir_generator::emit_statement(const ast::statement& stmt) {
                           m_instructions.emplace_back(ir::end_scope{});
                         },
 
-                        [&](const Box<ast::for_stmt>& f)
+                        [&](const Box<ast::for_>& f)
                         {
                           const auto start_label = new_label();
                           const auto end_label = new_label();

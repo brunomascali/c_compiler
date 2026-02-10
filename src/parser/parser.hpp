@@ -1,9 +1,23 @@
 #ifndef C_COMPILER_PARSER_HPP
 #define C_COMPILER_PARSER_HPP
 
-#include "ast/ast.hpp"
-#include "lexer/lexer.hpp"
 #include "lexer/token.hpp"
+#include <ast/ast_fwd.hpp>
+#include <ast/program.hpp>
+#include <ast/function.hpp>
+#include <ast/expr/assignment.hpp>
+#include <ast/expr/binary.hpp>
+#include <ast/expr/unary.hpp>
+#include <ast/expr/call.hpp>
+#include <ast/expr/variable.hpp>
+
+#include <ast/statement/block_item.hpp>
+#include <ast/statement/block.hpp>
+#include <ast/statement/declaration.hpp>
+#include <ast/statement/for.hpp>
+#include <ast/statement/if.hpp>
+#include <ast/statement/return.hpp>
+#include <ast/statement/while.hpp>
 
 class parser
 {
@@ -28,13 +42,13 @@ private:
 
   ast::statement parse_statement();
 
-  ast::return_stmt parse_return();
+  ast::return_ parse_return();
 
-  ast::while_stmt parse_while();
+  ast::while_ parse_while();
 
-  ast::for_stmt parse_for();
+  ast::for_ parse_for();
 
-  ast::if_stmt parse_if();
+  ast::if_ parse_if();
 
   ast::expr parse_expr(int min_prec = 0);
 

@@ -1,6 +1,6 @@
-#include "parser.hpp"
-
-#include "ir/ir_generator.hpp"
+#include <parser/parser.hpp>
+#include <lexer/token.hpp>
+#include <vector>
 
 using tk = token::token_kind;
 
@@ -71,13 +71,13 @@ ast::declaration parser::parse_declaration() {
 ast::statement parser::parse_statement() {
   switch (current_token_kind()) {
     case tk::if_kw:
-      return std::make_unique<ast::if_stmt>(parse_if());
+      return std::make_unique<ast::if_>(parse_if());
     case tk::return_kw:
-      return std::make_unique<ast::return_stmt>(parse_return());
+      return std::make_unique<ast::return_>(parse_return());
     case tk::while_kw:
-      return std::make_unique<ast::while_stmt>(parse_while());
+      return std::make_unique<ast::while_>(parse_while());
     case tk::for_kw:
-      return std::make_unique<ast::for_stmt>(parse_for());
+      return std::make_unique<ast::for_>(parse_for());
     case tk::brace_open:
       return std::make_unique<ast::block>(parse_block());
     default:
@@ -87,15 +87,15 @@ ast::statement parser::parse_statement() {
   }
 }
 
-ast::return_stmt parser::parse_return() {
+ast::return_ parser::parse_return() {
   consume(tk::return_kw, "Expected 'return' keyword");
   auto expr = parse_expr();
   consume(tk::semicolon, "Expected ';' after return statement");
 
-  return ast::return_stmt(std::move(expr));
+  return ast::return_(std::move(expr));
 }
 
-ast::while_stmt parser::parse_while() {
+ast::while_ parser::parse_while() {
   consume(tk::while_kw, "Expected 'while' keyword");
 
   consume(tk::paren_open, "Expected '(' after 'while'");
@@ -106,10 +106,10 @@ ast::while_stmt parser::parse_while() {
   auto body = parse_statement();
   consume(tk::brace_close, "Expected '}' after while-loop body");
 
-  return ast::while_stmt(std::move(cond), std::move(body));
+  return ast::while_(std::move(cond), std::move(body));
 }
 
-ast::for_stmt parser::parse_for() {
+ast::for_ parser::parse_for() {
   consume(tk::for_kw, "Expected 'for'");
   consume(tk::paren_open, "Expected '(' after 'for'");
   auto decl = parse_declaration();
@@ -121,10 +121,10 @@ ast::for_stmt parser::parse_for() {
   auto body = parse_statement();
   consume(tk::brace_close, "Expected '}' after while-loop body");
 
-  return ast::for_stmt(std::move(decl), std::move(cond), std::move(post), std::move(body));
+  return ast::for_(std::move(decl), std::move(cond), std::move(post), std::move(body));
 }
 
-ast::if_stmt parser::parse_if() {
+ast::if_ parser::parse_if() {
   consume(tk::if_kw, "Expected 'if'");
 
   consume(tk::paren_open, "Expected '(' after 'if'");
@@ -135,7 +135,7 @@ ast::if_stmt parser::parse_if() {
   auto then = parse_statement();
   consume(tk::brace_close, "Expected '}' after if-body");
 
-  return ast::if_stmt(std::move(cond), std::move(then));
+  return ast::if_(std::move(cond), std::move(then));
 }
 
 ast::expr parser::parse_expr(int min_prec) {
